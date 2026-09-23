@@ -97,7 +97,7 @@ def test_the_page_is_served_with_the_uploaded_design_intact(panel):
     assert "v2rayng://install-sub" in html and "v2box://install-sub" in html
     assert "hiddify://install-sub" in html and "streisand://import/" in html
     assert "/p/'+encodeURIComponent(state.token)+'/data" in html, "reads the panel"
-    assert "کلاینت مورد نظر روی سیستم عامل شما نصب نیست" in html
+    assert "کلاینت باز نشد. اگر نصب نیست" in html
     assert r.headers.get("cache-control", "").startswith("no-store")
 
 
@@ -289,7 +289,9 @@ def test_the_page_never_paints_a_light_layer_over_the_uploaded_background(panel)
     # the artwork is painted on its own fixed backdrop, at the design's position
     assert "body::before{" in html
     assert "position:fixed;inset:0;z-index:-1" in html
-    assert "center top / cover no-repeat" in html
+    assert "background-position: center top" in html
+    assert "background-size: cover" in html
+    assert "background-repeat: no-repeat" in html
     # the artwork is declared as what it is: a JPEG (it was labelled image/png,
     # which strict browsers refuse — the art vanished and only the veil stayed)
     assert 'url("data:image/jpeg;base64,/9j/' in html
@@ -454,26 +456,15 @@ def test_the_page_declares_itself_dark_so_no_browser_filter_is_added(panel):
     assert '<meta name="theme-color" content="#03040d">' in html
 
 
-def test_the_admin_s_own_background_is_the_top_layer(panel):
-    """A file in the repo is the page's background; the design stays as a fallback.
-
-    The admin replaces the picture by uploading `static/img/backm.png` — no code
-    change. The design's own artwork is kept underneath it on purpose: a file that
-    is missing, half-uploaded or unreadable makes the browser drop that layer and
-    paint the one below, so the page can never go blank while he swaps pictures.
-    """
+def test_subscription_artwork_is_unchanged(panel):
+    """The responsive/translation pass must not replace the existing artwork."""
+    import hashlib
     import re
 
     uid, _ = _user(panel, "bgorder")
     sub = _link(panel, [uid])
     html = panel.get(f"/p/{sub['token']}").text
     block = html[html.index("body::before"): html.index("}", html.index("body::before"))]
-    urls = re.findall(r'url\("([^"]+)"\)', block)
-    assert urls, block
-    assert urls[0] == "/static/img/backm.png", urls[0]
-    assert urls[1].startswith("data:image/jpeg;base64,/9j/"), "the fallback layer went missing"
-    # both layers sized and placed the same way, so a swap changes nothing else
-    assert block.count("center top / cover no-repeat") == 2
-    # and the file the page points at is part of the repo that serves it
-    assert pathlib.Path(__file__).resolve().parent.parent.joinpath(
-        "static", "img", "backm.png").exists(), "the background file is missing from the repo"
+    image = re.search(r'url\("data:image/jpeg;base64,([^"]+)"\)', block)
+    assert image, "the existing background must keep its correct MIME type"
+    assert hashlib.sha256(base64.b64decode(image[1])).hexdigest() == "aa70910577037caa0cc236b088a0cd23704a6dce40bbc4137edcacde9da5c229"

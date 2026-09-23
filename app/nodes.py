@@ -23,6 +23,7 @@ import time
 import httpx
 
 from . import APP_VERSION, config, db, routing
+from .geo import location_fields
 
 log = logging.getLogger("titan.nodes")
 
@@ -134,10 +135,7 @@ def identity() -> dict:
         "version": APP_VERSION,
         "role": "node" if config.IS_NODE else "main",
         "name": _own_name(local),
-        "city": local.get("city") or "",
-        "country": local.get("country") or "",
-        "country_code": (local.get("country_code") or "").upper(),
-        "flag": local.get("flag") or "🌐",
+        **location_fields(local),
         "url": config.NODE_URL or "",
         "edge": {"scheme": edge_scheme, "port": edge_port},
         "raw_ports": routing.raw_report(1) if config.IS_NODE else {},

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Verification suite for TiTaN's security fixes.
+"""Intrusive verification suite for a disposable TiTaN deployment.
 
-Run against a *live* deployment:  python scripts/verify_deploy.py https://your-panel.up.railway.app
-Order matters: checks that need the first-run (no password) admin run first,
-then the suite locks a real password and tests the brute-force guard, because
-while `auth_is_default` is set ANY password authenticates.
+This tool changes passwords/data and exercises login throttling. Read it first;
+never treat it as a read-only production health check. Fresh databases use the
+TiTaN password unless TITAN_ADMIN_PASS was set before first boot.
 """
 import contextlib
 import json
@@ -40,7 +39,7 @@ ADMIN_PW = os.environ.get("TITAN_ADMIN_PASSWORD", "TiTaN")
 def session(password: str | None = None):
     """Log in and yield an authenticated client.
 
-    A fresh deploy has no password (`auth_is_default`); an administered one does.
+    Fresh databases also require a password (default: TiTaN).
     Pass the password in via TITAN_ADMIN_PASSWORD when running this against a
     panel you already configured, otherwise only the anonymous checks run.
     """
@@ -51,7 +50,7 @@ def session(password: str | None = None):
             raise SystemExit(
                 f"login failed (HTTP {r.status_code}). This panel has a password set; run\n"
                 f"  TITAN_ADMIN_PASSWORD='...' python scripts/verify_deploy.py {BASE}\n"
-                f"or against a fresh deploy, where no password is required."
+                f"or supply the initial password configured for that database."
             )
         yield c
 

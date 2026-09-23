@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Quick end-to-end smoke test against a running TiTaN instance (mock mode)."""
+import os
 import sys
 import httpx
 
@@ -14,8 +15,8 @@ def main():
     print("needs_setup:", st["needs_setup"])
     assert st["needs_setup"] is False
 
-    # log in with the default admin ("TiTaN", no password until one is set)
-    r = c.post(f"{BASE}/api/login", json={"username": "TiTaN", "password": ""})
+    # Use the current password; this script is intended for a disposable panel.
+    r = c.post(f"{BASE}/api/login", json={"username": "TiTaN", "password": os.environ.get("TITAN_ADMIN_PASSWORD", "TiTaN")})
     assert r.status_code == 200, r.text
     c.cookies.set("titan_session", r.cookies.get("titan_session"))
     print("logged in (default admin)")

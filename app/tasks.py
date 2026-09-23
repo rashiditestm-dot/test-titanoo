@@ -12,7 +12,7 @@ from . import config, db, state, xray
 
 log = logging.getLogger("titan.tasks")
 
-# cached Cloudflare colo for the location widget
+# Cached location; colo is retained for response compatibility.
 LOCATION: dict = {"colo": "?"}
 
 # usage deltas waiting to be reported back to the main panel (node role)
@@ -132,25 +132,21 @@ async def _keep_alive():
 
 
 async def _refresh_location():
-    """Resolve Cloudflare edge colo once at startup and every 12h.
-    Also keeps the local node's city/country/flag in sync."""
-    from .colo_map import describe_colo
+    """Refresh this node's GeoIP estimate; never fall back to a CDN PoP."""
+    from .geo import detect_own_location
 
     while True:
         try:
-            async with httpx.AsyncClient(timeout=4) as client:
-                r = await client.get("https://www.cloudflare.com/cdn-cgi/trace")
-                for line in r.text.splitlines():
-                    if line.startswith("colo="):
-                        LOCATION["colo"] = line.split("=", 1)[1]
-                        break
-            loc = describe_colo(LOCATION.get("colo"))
-            if loc.get("city") and loc.get("city") != "Unknown":
+            loc = await asyncio.to_thread(detect_own_location)
+            if loc:
+                LOCATION.update(loc)
                 db.set_local_node_location(
-                    loc["city"], loc["country"], loc.get("country_code", ""), loc["flag"]
+                    loc["city"], loc["country"], loc["country_code"], loc["flag"]
                 )
+        except asyncio.CancelledError:
+            break
         except Exception:  # noqa: BLE001
-            pass
+            log.debug("local location lookup unavailable", exc_info=True)
         await asyncio.sleep(12 * 3600)
 
 
@@ -199,7 +195,7 @@ async def _enrich_node_locations():
             for n in db.list_nodes():
                 if n.get("is_local"):
                     continue
-                if n.get("country_code") or not (n.get("address") or "").strip():
+                if any(n.get(k) for k in ("city", "country", "country_code")) or not (n.get("address") or "").strip():
                     continue
                 loc = await asyncio.to_thread(detect_location, n["address"])
                 if loc:

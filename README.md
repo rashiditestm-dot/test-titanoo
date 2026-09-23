@@ -1,209 +1,139 @@
 <div align="center">
 
-<img src="static/img/logo.png" width="120" alt="TiTaN logo">
+<img src="docs/assets/cover.svg" alt="TiTaN Panel — deployment and operations" width="100%">
 
-# ⚡ TiTaN Panel
+# TiTaN Panel
 
-### پنل مدیریت پروکسی چندپروتکله — سبک، سریع و زیبا
-**A fast, single-service multi-protocol proxy panel (VLESS · VMess · Trojan · Shadowsocks)**
+**Manage users. Publish subscriptions. Connect your nodes.**
 
-[English](#english) · [فارسی](#فارسی)
+🇬🇧 [English guide](docs/en/README.md) · 🇮🇷 [راهنمای فارسی](docs/fa/README.md)
+
+[Deployment](DEPLOY.md) · [Environment reference](docs/environment.md) · [Maintenance report](docs/maintenance-report.md)
 
 </div>
 
 ---
 
-# فارسی
+## 🇬🇧 English
 
-## TiTaN چیست؟
+TiTaN is a **FastAPI + SQLite proxy-management panel** with a Persian/English dashboard and a public subscription page. Its Docker image runs **Nginx, the Python panel and Xray-core** together. The same codebase can run as the main panel or as a remote node.
 
-TiTaN یک پنل تک‌سرویسه برای ساخت و مدیریت **کانفیگ‌های پروکسی** است. با یک دیپلوی ساده روی Railway یا Render، یک سرور کامل پروکسی با پنل مدیریتی می‌گیرید. برخلاف پنل‌های مشابه، TiTaN:
+### What is actually included
 
-- از **۴ پروتکل** پشتیبانی می‌کند: VLESS، VMess، Trojan، Shadowsocks
-- از **۳ روش انتقال** پشتیبانی می‌کند: WebSocket، XHTTP، gRPC
-- از **SQLite** استفاده می‌کند (سریع‌تر و امن‌تر از فایل JSON)
-- رابط کاربری مدرن، دوزبانه (فارسی/انگلیسی) و ریسپانسیو دارد
+| Area | In this repository |
+| :--- | :--- |
+| **Users & configs** | Create/edit users, choose protocol/transport, set quota and expiry, copy links and QR codes |
+| **Subscriptions** | Select existing users/configs, create named links, set an image/plan label, enable or disable a link |
+| **Public page** | Profile, usage, expiry, config locations, copy actions and client import/download links |
+| **Nodes** | Domain discovery, credential bootstrap, config synchronization, usage reports and health checks |
+| **Location & flags** | Node-specific GeoIP estimates, manual country metadata and self-hosted country flags; no CDN-country guessing |
+| **Operations** | Settings, Xray configuration generation, traffic collection, database backup/restore and diagnostics |
 
-## ویژگی‌ها
+> **Know the boundaries.** Protocol availability depends on the installed core and the ports your host exposes. Hysteria2 and WireGuard need UDP; WireGuard also needs host capabilities. Some legacy UI controls are presentational, and device/IP/request limits are not enforced by the current proxy path. The [full guide](docs/en/README.md#limitations) documents these limits rather than promising features the code does not implement.
 
-| | |
-|---|---|
-| 🪄 **۴ پروتکل + ۳ انتقال** | VLESS / VMess / Trojan / Shadowsocks روی WS / XHTTP / gRPC |
-| 🗄 **SQLite** | بدون نیاز به دیتابیس خارجی، با WAL و نوشتن اتمیک |
-| 👤 **ورود بدون ثبت‌نام** | اولین ورود با نام کاربری پیش‌فرض `TiTaN` و بدون رمز — سپس از تنظیمات رمز بسازید |
-| 📊 **محدودیت حجم و انقضا** | حجم (GB) و تاریخ انقضا با قطع خودکار اعمال می‌شوند. سقف دستگاه و IP مجاز فعلاً فقط **ذخیره** می‌شوند (اعمالشان به پروتکل شناسایی IP واقعی نیاز دارد — ببینید «محدودیت‌های شناخته‌شده») |
-| 🛡 **مسیریابی و فیلتر** | مسدودسازی تبلیغات، سایت‌های ایرانی و IPهای خصوصی |
-| 📈 **داشبورد زنده** | نمودار ترافیک ۲۴ ساعته، CPU/RAM/دیسک، موقعیت سرور |
-| 🔗 **لینک اشتراک + QR** | خروجی استاندارد v2rayNG با header مصرف و انقضا |
-| 🛑 **ابطال آنی لینک** | چرخش UUID با یک کلیک |
-| 📱 **صفحه وضعیت عمومی** | `/status/<uid>` برای رصد مصرف بدون ورود |
-| 🌗 **دارک/لایت + دو زبانه** | فارسی و انگلیسی با فونت محلی وزیرمتن |
-| 📜 **گزارش رویدادها** | لاگ ورود، ساخت/حذف کاربر، تغییرات و… |
-| 💾 **پشتیبان‌گیری خودکار** | بکاپ دوره‌ای SQLite + دانلود/بازیابی |
-| 🔄 **راه‌اندازی مجدد درون‌پنلی** | ری‌استارت پنل با یک کلیک |
-| 🌍 **DoH داخلی** | DNS-over-HTTPS پروکسی برای کلاینت‌ها |
-| ⏱ **بیدارباش خودکار** | پینگ داخلی برای سرویس‌های ابری |
+### Start here
 
-## نصب سریع
+1. Read the [requirements and installation steps](docs/en/README.md#requirements).
+2. For Railway, use the included Docker deployment and attach a **persistent volume at `/app/data`**.
+3. Open `/login`. A fresh database uses **`TiTaN` as the password**, unless `TITAN_ADMIN_PASS` was set before first boot. **An empty password is not valid.**
+4. Change the initial password, set the public domain, then create a user and subscription.
 
-### 🚂 Railway (توصیه‌شده)
-1. ریپازیتوری را Fork یا push کنید.
-2. در [railway.app](https://railway.app) → **New Project → Deploy from GitHub repo**.
-3. Railway فایل `railway.json` را می‌شناسد و همه‌چیز (Python + nginx + Xray) را خودش بالا می‌آورد.
-4. به آدرس سرویس + `/login` بروید و با نام کاربری `TiTaN` (بدون رمز) وارد شوید.
-
-### 🌐 Render
-1. در [render.com](https://render.com) → **New → Web Service** → ریپازیتوری را وصل کنید.
-2. `render.yaml` با runtime داکر شناسایی می‌شود.
-3. بعد از دیپلوی به `/login` بروید و با `TiTaN` (بدون رمز) وارد شوید.
-
-### 💻 اجرای محلی
 ```bash
-git clone <your-repo-url> titan
-cd titan
+# Local UI/API development; no real proxy traffic without Xray + ingress.
+git clone https://github.com/rashiditestm-dot/test-titanoo.git
+cd test-titanoo
+python3 -m venv .venv
+. .venv/bin/activate
 pip install -r requirements.txt
-uvicorn app.main:app --host 0.0.0.0 --port 8000
-# → http://localhost:8000/login  (نام کاربری: TiTaN — بدون رمز)
-```
-> بدون Xray، پنل در حالت mock کار می‌کند (همه امکانات مدیریتی فعال است؛ فقط ترافیک واقعی عبور نمی‌کند).
-
-## ورود اولیه
-
-1. `<your-domain>/login` → ورود با نام کاربری پیش‌فرض `TiTaN` (رمز لازم نیست)
-2. ⚠️ از **تنظیمات → امنیت** یک رمز اختصاصی تعیین کنید (در حالت پیش‌فرض، «رمز عبور فعلی» را خالی بگذارید)
-3. ورود و ساخت کاربر در بخش **کاربران**
-4. در **تنظیمات → پیشرفته** پروتکل انتقال پیش‌فرض و Fingerprint را تنظیم کنید
-5. لینک یا QR را به کلاینت (v2rayNG، Nekobox، Streisand و…) بدهید
-
-## معماری
-
-```
-کلاینت (v2rayNG)
-      │
-      ▼
-Cloudflare / پلتفرم ابری (TLS)
-      │
-      ▼
-Nginx (PORT) ──┬─ /vl-ws  ──► Xray VLESS WS  (10001)
-               ├─ /vm-ws  ──► Xray VMess WS  (10002)
-               ├─ /tr-ws  ──► Xray Trojan WS (10003)
-               ├─ /xhttp  ──► Xray VLESS/VMess XHTTP (10004)
-               ├─ /titan  ──► Xray VLESS/VMess gRPC (10005)
-               └─ /      ──► TiTaN panel (FastAPI, 10000) + DoH
+mkdir -p data
+export TITAN_DATA_DIR="$PWD/data"
+export TITAN_XRAY_CONFIG="$PWD/data/xray.json"
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --no-proxy-headers
 ```
 
-- **پنل (FastAPI)** مدیریت کاربران، لینک‌ها و آمار را انجام می‌دهد.
-- **Xray-core** موتور پروکسی واقعی است؛ پنل بعد از هر تغییر، `config.json` آن را بازتولید و Xray را ری‌استارت می‌کند.
-- آمار ترافیک هر ۵ ثانیه از API آمار Xray خوانده و در SQLite ذخیره می‌شود.
-
-## متغیرهای محیطی
-
-| متغیر | پیش‌فرض | توضیح |
-|---|---|---|
-| `PORT` | `8000` | پورت عمومی (توسط Railway/Render تزریق می‌شود) |
-| `TITAN_DATA_DIR` | `data/` | محل دیتابیس و بکاپ |
-| `PANEL_PORT` | `10000` | پورت داخلی پنل |
-| `XRAY_BIN` | `/usr/local/bin/xray` | مسیر باینری Xray |
-
-## API
-
-| مسیر | متد | توضیح |
-|---|---|---|
-| `/api/login` / `/api/logout` / `/api/change-password` | POST | احراز هویت |
-| `/api/me` | GET | وضعیت نشست و تنظیمات |
-| `/api/settings` | GET/POST | تنظیمات عمومی و پیشرفته |
-| `/api/reality/key` | POST | پین کردن جفت‌کلید Reality (کلید خصوصی فقط نوشته می‌شود، هرگز خوانده/لاگ نمی‌شود) |
-| `/api/users` | GET/POST | لیست/ساخت کاربر |
-| `/api/users/<uid>` | GET/PATCH/DELETE | جزئیات/ویرایش/حذف |
-| `/api/users/<uid>/toggle` | POST | فعال/غیرفعال |
-| `/api/users/<uid>/regenerate` | POST | چرخش UUID |
-| `/api/users/<uid>/reset` | POST | صفر کردن مصرف |
-| `/api/users/<uid>/links` | GET | لینک‌ها |
-| `/api/users/<uid>/qr` | GET | تصویر QR |
-| `/sub/<uid>` | GET | اشتراک (عمومی) |
-| `/api/status/<uid>` | GET | وضعیت عمومی |
-| `/api/stats` | GET | آمار سیستم |
-| `/api/nodes` | GET/POST | لیست/افزودن سرور |
-| `/api/nodes/<id>` | PATCH/DELETE | ویرایش/حذف سرور |
-| `/api/nodes/<id>/ping` | POST | بررسی اتصال سرور |
-| `/api/reports?days=7` | GET | آمار و گزارش‌ها |
-| `/api/admin-info` | GET | اطلاعات حساب ادمین |
-| `/api/events` | GET/DELETE | گزارش رویدادها |
-| `/api/backup` | GET | دانلود بکاپ |
-| `/api/backup/restore` | POST | بازیابی بکاپ |
-| `/api/restart` | POST | ری‌استارت پنل |
-| `/dns-query` | GET/POST | DoH |
-
-## ساختار پروژه
-
-```
-titan/
-├── app/                 # بک‌اند FastAPI
-│   ├── main.py          # روت‌ها و منطق API
-│   ├── db.py            # لایه SQLite
-│   ├── security.py      # هش رمز و نشست‌ها
-│   ├── links.py         # ساخت لینک‌های اتصال
-│   ├── xray.py          # تولید کانفیگ و آمار Xray
-│   ├── tasks.py         # تسک‌های پس‌زمینه
-│   ├── state.py         # وضعیت زنده
-│   ├── colo_map.py      # نقشه مکان سرور
-│   └── config.py        # تنظیمات
-├── templates/           # صفحات HTML
-├── static/              # CSS، JS، فونت، لوگو
-├── scripts/             # ابزارهای توسعه و تست
-├── Dockerfile
-├── nginx.conf
-├── entrypoint.sh
-├── Procfile / railway.json / render.yaml
-└── requirements.txt
-```
-
-## نکات امنیتی
-
-- رمز قوی انتخاب کنید؛ بعد از ۳ تلاش ناموفق، پاسخِ اشتباه بعدی تأخیر تصاعدی می‌گیرد (سقف ۱۵ ثانیه) و بعد از ۳۰ تلاش، ۱۰ دقیقه قفل می‌شود.
-- پنل از `X-Forwarded-For` فقط برای **نمایش** IP استفاده می‌کند؛ شمارندهٔ قفل روی آدرس واقعی سوکت است، پس با هدر جعلی دور زده نمی‌شود.
-- داکیومنت Swagger به‌صورت پیش‌فرض بسته است. برای توسعه با `TITAN_DOCS=1` فعالش کنید.
-- درخواست‌های تغییردهندهٔ حالت، `Origin` را می‌سنجند؛ اگر پنل را پشت یک دامنه/CDN دوم قرار می‌دهید، آن دامنه را در «تنظیمات → عمومی → دامنهٔ عمومی» ثبت کنید وگرنه مرورگر ۴۰۳ می‌گیرد.
-
-## محدودیت‌های شناخته‌شده
-
-بیایید صادق باشیم — این‌ها را README قول نمی‌دهد مگر با همین توضیح:
-
-| مورد | وضعیت امروز |
-|---|---|
-| سقف حجم / تاریخ انقضا | ✅ اعمال می‌شود (کاربر غیرفعال و از کانفیگ Xray حذف می‌شود) |
-| سقف دستگاه (`max_devices`) | ⚠️ ذخیره می‌شود، **اعمال نمی‌شود**. نیاز دارد Xray IP واقعی کلاینت را ببیند؛ روی Railway (TLS در لبه، بدون PROXY protocol) این IP وجود ندارد |
-| هیستریا۲ / WireGuard روی Railway | ❌ ساختنی نیست: ریلوی UDP منتشر نمی‌کند. این دو فقط روی VPS |
-| فیلتر اپراتور روی دامنهٔ `up.railway.app` | ⚠️ لینک‌های WS/xHTTP از لبهٔ HTTPS ریلوی می‌آیند و SNI‌شان همان دامنه است؛ بعضی اپراتورها (گزارش ایرانسل) این را می‌شکنند. راه‌حل: دامنهٔ خودت پشت Cloudflare، یا اجرا روی VPS |
-| IPهای مجاز (`allowed_ips`) | ⚠️ مثل بالا |
-| سقف درخواست (`max_requests`) | ⚠️ مثل بالا |
-| پنل خودکاربر | ❌ هنوز فقط ادمین هست؛ کاربر فقط صفحهٔ `/status/<uid>` را می‌بیند |
-| حذف شدن نشست‌ها با هر دیپلوی | ⚠️ طبیعی است: `secret_key` در همان ولوم است؛ اگر Volume وصل نکنید **همه‌چیز** از جمله جفت‌کلید Reality و لینک‌های منتشرشده از بین می‌رود |
-
-اگر `TITAN_TRUST_PROXY_HEADERS=0` را روی یک VPS با nginx+PROXY protocol تنظیم کنید، مسیر اعمال
-محدودیت دستگاه باز می‌شود؛ فعلاً این فیلدها را در UI به‌عنوان «پیکربندی ذخیره‌شده» ببینید.
-- در صورت نشت لینک اشتراک، از دکمه **تغییر UUID** استفاده کنید.
-- از HTTPS (Cloudflare یا خود پلتفرم) استفاده کنید.
-- بکاپ دوره‌ای را فعال نگه دارید.
+Open **`http://localhost:8000/login`**. See the guide for Windows, Docker, HTTPS, Railway and nodes.
 
 ---
 
-# English
+<div dir="rtl">
 
-## What is TiTaN?
+## 🇮🇷 فارسی
 
-A single-service panel for creating and managing proxy configs. Deploy once on Railway or Render and get a full proxy server with an admin dashboard. It supports **4 protocols** (VLESS, VMess, Trojan, Shadowsocks), **3 transports** (WebSocket, XHTTP, gRPC), stores everything in **SQLite**, and ships a modern bilingual (FA/EN) responsive UI.
+TiTaN یک **پنل مدیریت پروکسی با FastAPI و SQLite** است. داشبورد مدیریتی و صفحهٔ عمومی اشتراک از فارسی و انگلیسی پشتیبانی می‌کنند. در نسخهٔ Docker، **Nginx، پنل پایتون و Xray-core** در یک کانتینر اجرا می‌شوند. همین کد می‌تواند نقش پنل اصلی یا نود را داشته باشد.
 
-## Quick start
+### قابلیت‌های موجود در همین مخزن
 
-- **Railway:** Fork → New Project → Deploy from GitHub → open `/login` (username `TiTaN`)
-- **Render:** New Web Service → connect repo (`render.yaml` handles it) → `/login` (username `TiTaN`)
-- **Local:** `pip install -r requirements.txt && uvicorn app.main:app --port 8000`
+| بخش | امکانات موجود |
+| :--- | :--- |
+| **کاربران و کانفیگ‌ها** | ساخت و ویرایش کاربر، انتخاب پروتکل و روش انتقال، تعیین حجم و انقضا، لینک اتصال و کد QR |
+| **اشتراک‌ها** | انتخاب کاربران و کانفیگ‌های موجود، ساخت لینک با نام دلخواه، تصویر و عنوان پلن، فعال یا غیرفعال کردن لینک |
+| **صفحهٔ عمومی اشتراک** | نمایش پروفایل، مصرف، انقضا، مکان کانفیگ‌ها، کپی و لینک ورود به کلاینت یا دانلود آن |
+| **نودها** | شناسایی با دامنه، تنظیم اطلاعات اتصال، همگام‌سازی کانفیگ، گزارش مصرف و بررسی وضعیت |
+| **مکان و پرچم** | تخمین مکان از خود نود، اطلاعات دستی کشور و پرچم‌های محلی؛ بدون حدس زدن مکان سرور از لبهٔ CDN |
+| **نگهداری** | تنظیمات، تولید کانفیگ Xray، جمع‌آوری مصرف، پشتیبان‌گیری و بازیابی دیتابیس و ابزارهای بررسی |
 
-## License
+> **محدودیت‌ها را بشناسید.** پشتیبانی عملی از هر پروتکل به هسته و پورت‌های قابل دسترس میزبان وابسته است. Hysteria2 و WireGuard به UDP نیاز دارند و WireGuard به دسترسی‌های سیستم هم نیاز دارد. بعضی کنترل‌های قدیمی رابط صرفاً نمایشی‌اند و محدودیت دستگاه، IP و تعداد درخواست در مسیر فعلی پروکسی اعمال نمی‌شوند. [راهنمای کامل](docs/fa/README.md#limitations) این موارد را شفاف توضیح می‌دهد.
 
-MIT — see [LICENSE](LICENSE). Font: Vazirmatn (OFL). Built with ❤️.
+### از اینجا شروع کنید
+
+۱. [پیش‌نیازها و روش نصب](docs/fa/README.md#requirements) را بخوانید.
+
+۲. برای Railway از Docker موجود استفاده کنید و **Volume دائمی با مسیر `/app/data`** بسازید.
+
+۳. صفحهٔ `/login` را باز کنید. رمز عبور دیتابیس تازه **`TiTaN`** است، مگر اینکه پیش از اولین اجرا `TITAN_ADMIN_PASS` را تعیین کرده باشید. **رمز خالی معتبر نیست.**
+
+۴. رمز اولیه را تغییر دهید، دامنهٔ عمومی را تنظیم کنید و سپس کاربر و لینک اشتراک بسازید.
+
+[راهنمای فارسی: نصب، داشبورد، اشتراک، نود و عیب‌یابی ←](docs/fa/README.md)
+
+</div>
 
 ---
 
-<div align="center"><b>TiTaN</b> — fast, lightweight, magical ⚡</div>
+## Project structure · ساختار پروژه
+
+```text
+.
+├── app/                  FastAPI, SQLite, routing, geo, Xray and node coordination
+├── templates/            login.html, dashboard.html, subscription.html, status.html
+├── static/
+│   ├── js/               Translations, dashboard bindings and shared flag renderer
+│   ├── css/              Local fonts and the public status page stylesheet
+│   ├── data/             Country names/codes shared with the backend
+│   ├── fonts/            Vazirmatn + OFL license
+│   └── img/              Existing artwork, gallery and local SVG flags
+├── tests/                Application and frontend regressions
+├── scripts/              Development, verification and browser checks
+├── docs/                 English/Persian guides, reference and change report
+├── Dockerfile            Single-container runtime (Linux x86-64 binaries)
+├── entrypoint.sh         Container startup and public-port routing
+├── nginx.conf            Panel and Xray ingress routes
+├── railway.json          Railway Docker deployment and /healthz check
+├── render.yaml           Existing Render deployment descriptor
+├── Procfile              Existing process entry point
+├── requirements.txt      Runtime dependencies
+└── requirements-dev.txt  Test and lint dependencies
+```
+
+### Verification · بررسی تغییرات
+
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+python -m pytest
+node scripts/check_i18n.js
+node scripts/bridge_smoke.js
+
+# Optional: an isolated test server, real browsers and temporary data only.
+python -m playwright install --with-deps chromium firefox webkit
+python scripts/check_ui.py
+```
+
+The [maintenance report](docs/maintenance-report.md) records the tested scope and remaining deployment checks. A passing mock/API test is **not** proof of live proxy connectivity.
+
+گزارش تغییرات، محدودهٔ تست‌ها و بررسی‌های باقی‌مانده برای دیپلوی واقعی را مشخص می‌کند. موفقیت تست‌های API یا حالت آزمایشی، به معنی تأیید عبور ترافیک واقعی پروکسی نیست.
+
+### Licensing · مجوزها
+
+No project-wide `LICENSE` file is included in this snapshot; do not assume a project license from an older README. See [third-party notices](docs/third-party.md) for bundled flags and fonts.
+
+در این نسخه فایل مجوز سراسری پروژه وجود ندارد. مجوز پرچم‌ها و فونت‌های همراه در [یادداشت وابستگی‌های ثالث](docs/third-party.md) آمده است.

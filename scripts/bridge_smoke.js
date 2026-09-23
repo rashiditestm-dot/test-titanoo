@@ -43,6 +43,7 @@ const documentStub = {
   removeEventListener() {}, dispatchEvent() {},
 };
 
+const LANG = process.env.TITAN_LANG === 'en' ? 'en' : 'fa';
 const RAW_OPEN = 10009;
 const NODES = [
   { id: 1, name: 'سرور اصلی', is_local: true, enabled: true, address: 'http://panel.up.railway.app', flag: '🇺🇸',
@@ -108,7 +109,7 @@ const PAYLOADS = {
 };
 const fetchStub = async (url) => {
   const key = String(url).split('?')[0].replace(/\/+$/, '');
-  const body = PAYLOADS[key] !== undefined ? PAYLOADS[key] : { ok: true };
+  const body = key === '/static/data/countries.json' ? JSON.parse(fs.readFileSync(path.join(REPO,'static/data/countries.json'),'utf8')) : (PAYLOADS[key] !== undefined ? PAYLOADS[key] : { ok: true });
   return { ok: true, status: 200, headers: { get: () => 'application/json' },
     json: async () => body, text: async () => JSON.stringify(body) };
 };
@@ -121,10 +122,11 @@ const windowStub = {
 };
 
 const src = fs.readFileSync(path.join(REPO, 'static/js/titan-bridge.js'), 'utf8');
+const scripts = ['static/js/i18n.js','static/js/country-flags.js'].map(file=>fs.readFileSync(path.join(REPO,file),'utf8')).join('\n')+'\n'+src;
 new Function('window', 'document', 'location', 'navigator', 'localStorage', 'fetch', 'confirm', 'alert',
-  'console', 'setTimeout', 'clearTimeout', 'requestAnimationFrame', 'Event', 'CustomEvent', src)(
+  'console', 'setTimeout', 'clearTimeout', 'requestAnimationFrame', 'Event', 'CustomEvent', scripts)(
   windowStub, documentStub, windowStub.location, windowStub.navigator,
-  { getItem: () => null, setItem() {}, removeItem() {} }, fetchStub, () => true, () => {},
+  { getItem: () => LANG, setItem() {}, removeItem() {} }, fetchStub, () => true, () => {},
   console, setTimeout, clearTimeout, (fn) => setTimeout(fn, 0), class {}, class {});
 
 const failures = [];
@@ -144,6 +146,7 @@ const check = (cond, msg) => { if (!cond) failures.push(msg); };
 
   // ── servers: luxury cards, every state ───────────────────────────────────
   const grid = html(inSection('servers', '.node-grid'));
+  const gridText = grid.replace(/<[^>]*>/g,'');
   check(grid.length > 600, 'the server grid stayed empty');
   check((grid.match(/class="node-lux/g) || []).length === NODES.length,
     `expected ${NODES.length} luxury cards, got ${(grid.match(/class="node-lux/g) || []).length}`);
@@ -151,11 +154,11 @@ const check = (cond, msg) => { if (!cond) failures.push(msg); };
     check(grid.includes(needle), `server cards are missing ${needle}`);
   }
   check(!grid.includes('undefined'), 'server cards contain the string "undefined"');
-  check(grid.includes(`raw ${RAW_OPEN} ✓`), 'an open raw port is not shown as open');
-  check(grid.includes(`raw ${RAW_OPEN} ✕`), 'a closed raw port is not shown as closed');
-  check(grid.includes('sync 3/3 ✓'), 'a healthy sync does not show its served count');
+  check(gridText.includes(`${LANG==='en'?'Raw port':'پورت مستقیم'} ${RAW_OPEN} ✓`), 'an open raw port is not shown as open');
+  check(gridText.includes(`${LANG==='en'?'Raw port':'پورت مستقیم'} ${RAW_OPEN} ✕`), 'a closed raw port is not shown as closed');
+  check(gridText.includes(`${LANG==='en'?'Sync':'همگام‌سازی'} 3/3 ✓`), 'a healthy sync does not show its served count');
   check(grid.includes('HTTP 401'), 'a failed sync does not show its error');
-  check(grid.includes('حالت نگهداری'), 'a disabled node is not flagged as maintenance');
+  check(gridText.includes(LANG==='en'?'Maintenance mode':'حالت نگهداری'), 'a disabled node is not flagged as maintenance');
   check(grid.includes('data-act="sync"') && grid.includes('data-act="ping"') && grid.includes('data-act="toggle"'),
     'the per-node actions are not wired');
   check(!grid.includes('>ویرایش<') && !grid.includes('>حذف<'), 'a server action still shows a Persian word');
@@ -180,8 +183,8 @@ const check = (cond, msg) => { if (!cond) failures.push(msg); };
   check(!subs.includes('هنوز لینک اشتراکی'), 'the empty state is shown although links exist');
 
   // a node that can serve shows *which* credential it accepted
-  check(grid.includes('shared secret'), 'the node card does not name the accepted credential');
-  check(grid.includes('حالت نگهداری'), 'the maintenance state is missing');
+  check(gridText.includes(LANG==='en'?'Shared secret':'کلید مشترک'), 'the node card does not name the accepted credential');
+  check(gridText.includes(LANG==='en'?'Maintenance mode':'حالت نگهداری'), 'the maintenance state is missing');
 
   // ── latency advisor (client-side ping, not the panel->node probe) ────────
   const bridgeSrc = src;                       // the real bridge, as loaded above
@@ -225,5 +228,5 @@ const check = (cond, msg) => { if (!cond) failures.push(msg); };
   console.log('ok  subscriptions built links + builder wired');
   console.log('ok  nodes       domain-only add + copy-all variables');
   console.log('ok  dashboard   latency bands + medals');
-  console.log('bridge rendered every section');
+  console.log('bridge rendered every section ('+LANG+')');
 })();

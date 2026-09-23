@@ -45,8 +45,13 @@ from . import reality
 from . import routing
 from . import tasks as bg
 from . import wg
-from .colo_map import describe_colo
-from .geo import detect_location, flag_from_code
+from .geo import (
+    country_code,
+    detect_location,
+    detect_own_location,
+    flag_from_code,
+    location_fields,
+)
 from .links import build_links, subscription_text, volume_text
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -469,20 +474,14 @@ def _sub_transport_choices(u: dict) -> list:
 
 def _entry_place(plan: dict) -> dict:
     """{place, city, country_code, flag} for one link — node or this panel."""
-    node = plan.get("node") or {}
-    if plan.get("target") == "node" and node:
-        return {
-            "place": node.get("name") or "",
-            "city": node.get("city") or "",
-            "country_code": (node.get("country_code") or "").lower(),
-            "flag": node.get("flag") or "",
-        }
-    local = db.local_node() or {}
+    remote = plan.get("node") if plan.get("target") == "node" else None
+    node = remote or db.local_node() or {}
+    loc = location_fields(node)
     return {
-        "place": local.get("name") or "TiTaN",
-        "city": local.get("city") or "",
-        "country_code": (local.get("country_code") or "").lower(),
-        "flag": local.get("flag") or "",
+        "place": node.get("name") or ("" if remote else "TiTaN"),
+        "city": loc["city"],
+        "country_code": loc["country_code"].lower(),
+        "flag": loc["flag"],
     }
 
 
@@ -903,11 +902,21 @@ async def _node_status(node: dict) -> dict:
     return data
 
 
+async def _geo_locate(address: str) -> dict:
+    """{city, country, country_code, flag} of the host behind an address, or {}."""
+    try:
+        return await asyncio.to_thread(detect_location, address) or {}
+    except Exception:  # noqa: BLE001 — best-effort only
+        return {}
+
+
 def _serialize_node(node: dict, status: dict) -> dict:
     out = dict(node)
     out.pop("token", None)  # never expose a node credential to the frontend
     out["status"] = status
     out["version"] = APP_VERSION if node.get("is_local") else None
+    # every node shows a flag, and it always matches its country code
+    out.update(location_fields(node))
     if not node.get("is_local"):
         # how many users this node should be serving vs how many it actually has,
         # and whether the panel has proof that it received them
@@ -2091,7 +2100,7 @@ async def api_create_node(request: Request, _: str = Depends(_require_auth)):
     # No name yet? The domain can supply one (see the detection block below) —
     # asking for both is what made adding a node feel like manual work.
     address = _normalize_node_address(payload.get("address") or "")
-    cc = (payload.get("country_code") or "").strip()[:2].upper()
+    cc = country_code(payload.get("country_code"), payload.get("country"), payload.get("flag"))
     city = (payload.get("city") or "").strip()[:64]
     country = (payload.get("country") or "").strip()[:64]
     flag = (payload.get("flag") or "").strip()[:8]
@@ -2105,15 +2114,16 @@ async def api_create_node(request: Request, _: str = Depends(_require_auth)):
         identity = probe.get("identity") or {}
         found = _discovery_fields(identity)
         name = name or (found.get("name") or "")
-        city = city or (found.get("city") or "")
-        country = country or (found.get("country") or "")
-        cc = cc or (found.get("country_code") or "")
-        flag = flag or (found.get("flag") or "")
+        if not (city or country or cc or flag):
+            city = found.get("city") or ""
+            country = found.get("country") or ""
+            cc = found.get("country_code") or ""
+            flag = found.get("flag") or ""
         if not name:
             raise HTTPException(400, "name-required")
     # Auto-detect location from the normalized address when admin hasn't set it manually.
     # Never overwrite an explicit city/country/country_code/flag provided in the payload.
-    if address and not cc and not flag:
+    if address and not (city or country or cc or flag):
         try:
             loc = await asyncio.to_thread(detect_location, address)
         except Exception:
@@ -2123,8 +2133,7 @@ async def api_create_node(request: Request, _: str = Depends(_require_auth)):
             country = country or loc.get("country", "")[:64]
             cc = cc or (loc.get("country_code") or "")[:2].upper()
             flag = flag or loc.get("flag") or _flag_for(cc)
-    if not flag:
-        flag = _flag_for(cc)
+    flag = _flag_for(cc)
     # Manual nodes get a per-node token so sync works without a shared
     # TITAN_NODE_SECRET; the token is returned once (never re-serialized).
     token = secrets.token_hex(16)
@@ -2183,7 +2192,7 @@ async def api_update_node(node_id: int, request: Request, _: str = Depends(_requ
     # auto-detect country/flag if an address is given and none is known
     # Never overwrite explicit manual values — only fill missing fields.
     effective_addr = fields.get("address") if "address" in fields else node.get("address")
-    if effective_addr and not fields.get("country_code") and not fields.get("flag") and not node.get("country_code"):
+    if effective_addr and not any(fields.get(k) or node.get(k) for k in ("city", "country", "country_code", "flag")):
         # Only auto-detect if neither the payload nor the stored node has a country code.
         # This prevents overwriting a manual selection on re-edits, but fills on first set.
         addr_for_geo = fields.get("address") or effective_addr
@@ -2196,8 +2205,13 @@ async def api_update_node(node_id: int, request: Request, _: str = Depends(_requ
             fields.setdefault("country", loc.get("country", "")[:64])
             fields.setdefault("country_code", (loc.get("country_code") or "")[:2].upper())
             fields.setdefault("flag", loc.get("flag") or _flag_for(fields.get("country_code") or ""))
-    if "country_code" in fields and not fields.get("flag") and not payload.get("flag"):
-        fields["flag"] = _flag_for(fields["country_code"])
+    if any(key in fields for key in ("country_code", "country", "flag")):
+        place = {**node, **fields}
+        if "country" in fields and "country_code" not in fields:
+            place["country_code"] = ""
+        loc = location_fields(place)
+        fields["country_code"] = loc["country_code"]
+        fields["flag"] = loc["flag"]
     updated = db.update_node(node_id, fields)
     db.add_event("info", "node-update", str(node_id), ip=_client_ip(request))
     if any(k in fields for k in ("address", "enabled")):
@@ -2240,7 +2254,7 @@ async def api_ping_node(node_id: int, _: str = Depends(_require_auth)):
             loc = await asyncio.to_thread(detect_location, addr)
         except Exception:
             loc = None
-        if loc:
+        if loc and (not node.get("country_code") or node["country_code"].upper() == loc.get("country_code")):
             patch = {}
             if not node.get("city") and loc.get("city"):
                 patch["city"] = loc["city"][:64]
@@ -2426,15 +2440,10 @@ async def api_node_register(request: Request):
     if not url:
         raise HTTPException(400, "missing-url")
     fields = {"address": url}
-    host = re.sub(r"^[a-zA-Z][a-zA-Z0-9+.-]*://", "", url)
-    host = host.split("/", 1)[0].rsplit("@", 1)[-1].split(":")[0].strip("[]")
-    if host:
-        loc = await asyncio.to_thread(detect_location, host)
+    if not any(node.get(k) for k in ("city", "country", "country_code")):
+        loc = await _geo_locate(url)
         if loc:
-            fields["city"] = loc.get("city", "")[:64]
-            fields["country"] = loc.get("country", "")[:64]
-            fields["country_code"] = loc.get("country_code", "")[:2]
-            fields["flag"] = loc.get("flag", "🏳️")
+            fields.update(location_fields(loc))
     db.update_node(node["id"], fields)
     _trigger_node_sync()
     db.add_event("info", "node-register", f"{node['name']} -> {url}", ip=_client_ip(request))
@@ -2454,6 +2463,12 @@ async def api_node_discover(request: Request):
     already holds this node's credential.
     """
     data = nodesync.identity()
+    # Optional geodata must not make a healthy node miss the discovery timeout.
+    try:
+        loc = await asyncio.wait_for(asyncio.to_thread(detect_own_location), timeout=2.0)
+    except Exception:  # noqa: BLE001 — preserve identity when GeoIP is unavailable
+        loc = {}
+    data.update(location_fields(loc))
     presented = (request.headers.get("x-titan-node-secret")
                  or request.query_params.get("secret") or "")
     if not nodesync.secret_valid_for_node(presented):
@@ -2498,12 +2513,17 @@ async def api_detect_node(request: Request, _: str = Depends(_require_auth)):
         raise HTTPException(400, "address-required")
     probe = await _probe_node_identity(addr)
     identity = probe.get("identity") or {}
+    fields = _discovery_fields(identity)
+    if not fields.get("country_code"):
+        loc = await _geo_locate(addr)
+        if loc:
+            fields.update(location_fields(loc))
     return {
         "ok": probe["kind"] == "titan",
         "kind": probe["kind"],
         "url": probe.get("url") or "",
         "error": probe.get("error") or "",
-        "fields": _discovery_fields(identity),
+        "fields": fields,
         "identity": identity,
         "needs_credentials": bool(identity) and not identity.get("credential"),
         "can_claim": bool(identity.get("accepts_bootstrap")),
@@ -2524,6 +2544,10 @@ async def api_claim_node(node_id: int, request: Request, _: str = Depends(_requi
     claim: dict = {}
     if probe["kind"] == "titan":
         fields = _discovery_fields(identity)
+        if not fields.get("country_code"):
+            loc = await _geo_locate(addr)
+            if loc:
+                fields.update(location_fields(loc))
         if fields:
             db.update_node(node_id, fields)
         if identity.get("accepts_bootstrap"):
@@ -2628,16 +2652,14 @@ async def _claim_node(addr_url: str, panel_url: str, timeout: float = 8.0) -> di
 
 
 def _discovery_fields(identity: dict) -> dict:
-    """Node columns the identity card can fill in (never overwrites with blanks)."""
+    """Use the remote node's self-report, never the panel's or a CDN's location."""
     fields = {}
-    for key in ("name", "city", "country", "flag"):
-        value = (identity.get(key) or "").strip()
-        if value and value not in ("—", "🏳️"):
-            fields[key] = value[:64]
-    cc = (identity.get("country_code") or "").strip().upper()
-    if len(cc) == 2:
-        fields["country_code"] = cc
-        fields.setdefault("flag", _flag_for(cc))
+    name = str(identity.get("name") or "").strip()[:64]
+    if name and name != "—":
+        fields["name"] = name
+    loc = location_fields(identity)
+    if loc["country_code"]:
+        fields.update(loc)
     return fields
 
 
@@ -2730,7 +2752,7 @@ def _sub_link_url(sub: dict, request: Request) -> str:
 
 @functools.lru_cache(maxsize=1)
 def _subscription_page_html() -> str:
-    """The uploaded design, read once (4.5 MB of inlined assets)."""
+    """Cache the subscription template, including its embedded artwork."""
     with open(os.path.join(BASE_DIR, "templates", "subscription.html"), encoding="utf-8") as fh:
         return fh.read()
 
@@ -3289,7 +3311,7 @@ async def api_stats(_: str = Depends(_require_auth)):
         "nodes_count": len(nodes),
         "events_today": events_today,
         "hourly": hourly,
-        "location": describe_colo(bg.LOCATION.get("colo")),
+        "location": {"colo": bg.LOCATION.get("colo", "?"), **location_fields(bg.LOCATION)},
         "xray_installed": xray.xray_available(),
         "xray_running": xray.xray_running(),
         "app_version": APP_VERSION,

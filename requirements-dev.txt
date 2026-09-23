@@ -1,2 +1,5 @@
 pytest>=8
 ruff>=0.7
+
+# Optional cross-browser regression runner: scripts/check_ui.py
+playwright>=1.51,<2

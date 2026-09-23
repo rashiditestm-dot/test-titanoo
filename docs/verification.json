@@ -1,0 +1,103 @@
+{
+  "date": "2026-09-23",
+  "base_commit": "055281847034617d62dd03f59027077f232510d9",
+  "pytest": {
+    "tests": 298,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "browsers": {
+    "engines": [
+      "chromium",
+      "firefox",
+      "webkit"
+    ],
+    "languages": [
+      "fa",
+      "en"
+    ],
+    "widths": [
+      320,
+      360,
+      390,
+      480,
+      600,
+      768,
+      820,
+      960,
+      1024,
+      1100,
+      1280,
+      1440,
+      1920,
+      2560
+    ],
+    "cases": 84,
+    "principal_page_checks": 252
+  },
+  "additional_checks": [
+    "Language switch with unsaved form values and selected configs",
+    "Node detection uses normalized fields, not stale identity flags",
+    "Real UI create/edit user, create/disable/delete subscription, manual node creation",
+    "iPhone/Pixel device profiles; not physical hardware",
+    "Targeted check: switch language during temporary button feedback",
+    "25 final template/i18n tests passed after final UI text adjustments",
+    "Ruff and git diff whitespace checks passed",
+    "94 local documentation references checked"
+  ],
+  "scope": {
+    "base_commit": "055281847034617d62dd03f59027077f232510d9",
+    "route_declarations_unchanged": 77,
+    "unchanged_files": [
+      "app/db.py",
+      "app/security.py",
+      "app/config.py",
+      "app/routing.py",
+      "app/links.py",
+      "app/xray.py",
+      "app/reality.py",
+      "app/wg.py",
+      "app/sskeys.py",
+      "app/state.py",
+      "Dockerfile",
+      "entrypoint.sh",
+      "nginx.conf",
+      "railway.json",
+      "render.yaml",
+      "Procfile",
+      "requirements.txt",
+      "templates/status.html"
+    ],
+    "changed_python_functions_in_allowed_scope": {
+      "app/main.py": [
+        "_discovery_fields",
+        "_entry_place",
+        "_geo_locate",
+        "_serialize_node",
+        "api_claim_node",
+        "api_create_node",
+        "api_detect_node",
+        "api_node_discover",
+        "api_node_register",
+        "api_ping_node",
+        "api_stats",
+        "api_update_node"
+      ],
+      "app/nodes.py": [
+        "identity"
+      ],
+      "app/tasks.py": [
+        "_enrich_node_locations",
+        "_refresh_location"
+      ]
+    }
+  },
+  "limitations": [
+    "No production deployment or GitHub push",
+    "No real Docker build or live Xray proxy traffic verified in this sandbox",
+    "Browser engines ran on Linux; Windows/macOS/physical iOS/Android were not directly tested",
+    "GeoIP is approximate; both main and nodes must be updated",
+    "An async network-cancellation RuntimeWarning was observed during suite runs; it was not suppressed"
+  ]
+}

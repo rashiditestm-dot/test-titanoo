@@ -53,6 +53,8 @@ def test_a_node_answers_an_identity_card_without_leaking_anything(panel, monkeyp
     db.set_meta("node_secret", "")
     db.set_meta("panel_secret", "")          # the panel may have minted one by now
     db.set_local_node_location("Frankfurt", "Germany", "DE", "🇩🇪")
+    monkeypatch.setattr(m, "detect_own_location", lambda: {
+        "city": "Frankfurt", "country": "Germany", "country_code": "DE", "flag": "🇩🇪"})
     r = panel.get("/api/node/discover")
     assert r.status_code == 200, r.text
     card = r.json()
@@ -223,6 +225,76 @@ def test_claiming_an_existing_node_reports_every_step(panel, monkeypatch):
     assert db.get_node(node["id"])["city"] == "Frankfurt", "the card was written onto the node"
 
 
+def test_auto_detect_prefers_the_requested_nodes_self_report(panel, monkeypatch):
+    """DNS may point at an edge in another country; the node report wins."""
+    calls = []
+    async def probe(address):
+        calls.append(address)
+        result = await _FakeProbe()(address)
+        result["identity"].update(city="Dubai", country="United Arab Emirates",
+                                  country_code="AE", flag="🇩🇪")
+        return result
+
+    monkeypatch.setattr(m, "_probe_node_identity", probe)
+    monkeypatch.setattr(m, "detect_location", lambda *args: pytest.fail("must not locate a CDN DNS IP"))
+    before = len(db.list_nodes())
+    r = panel.post("/api/nodes/detect", json={"address": "dubai.example.com"}, headers=ORIGIN)
+    assert r.status_code == 200, r.text
+    fields = r.json()["fields"]
+    assert calls == ["dubai.example.com"]
+    assert (fields["city"], fields["country_code"], fields["flag"]) == ("Dubai", "AE", "🇦🇪")
+    assert len(db.list_nodes()) == before
+
+
+def test_failed_detection_does_not_borrow_the_panels_country(panel, monkeypatch):
+    monkeypatch.setattr(m, "_probe_node_identity", _FakeProbe(kind="unreachable"))
+    monkeypatch.setattr(m, "detect_location", lambda *args: {})
+    db.set_local_node_location("Frankfurt", "Germany", "DE", "🇩🇪")
+    r = panel.post("/api/nodes/detect", json={"address": "unreachable.example.com"}, headers=ORIGIN)
+    assert r.status_code == 200
+    assert not r.json()["ok"]
+    assert r.json()["fields"] == {}
+
+
+def test_country_and_flag_survive_manual_creation_and_country_edits(panel, monkeypatch):
+    monkeypatch.setattr(m, "_probe_node_identity", _FakeProbe())
+    async def sync(node_id, timeout=6.0):
+        return {"node_id": node_id, "ok": True}
+    monkeypatch.setattr(m, "_sync_node_now", sync)
+    r = panel.post("/api/nodes", json={"name": "manual", "address": "manual.example.com",
+                   "country": "هلند", "city": "Amsterdam", "flag": "🇩🇪"}, headers=ORIGIN)
+    assert r.status_code == 200, r.text
+    node = r.json()["node"]
+    assert (node["city"], node["country_code"], node["flag"]) == ("Amsterdam", "NL", "🇳🇱")
+    changed = panel.patch(f"/api/nodes/{node['id']}", json={"country_code": "tr", "flag": "🇩🇪"}, headers=ORIGIN)
+    assert changed.status_code == 200
+    assert changed.json()["node"]["flag"] == "🇹🇷"
+    assert db.get_node(node["id"])["flag"] == "🇹🇷"
+    db.delete_node(node["id"])
+
+
+def test_country_only_discovery_still_has_a_matching_flag(panel, monkeypatch):
+    async def probe(address):
+        result = await _FakeProbe()(address)
+        result["identity"].update(country="هلند", country_code="", flag="", city="Amsterdam")
+        return result
+    monkeypatch.setattr(m, "_probe_node_identity", probe)
+    fields = panel.post("/api/nodes/detect", json={"address": "amsterdam.example.com"}, headers=ORIGIN).json()["fields"]
+    assert fields["country_code"] == "NL" and fields["flag"] == "🇳🇱"
+
+
+def test_every_node_answers_with_a_flag_that_matches_its_country(panel):
+    """No node is ever serialized without a flag, and it follows the country."""
+    node = db.create_node({"name": "flagless", "address": "x.example.com",
+                           "country_code": "TR", "flag": "", "token": "t"})
+    s = m._serialize_node(node, {})
+    assert s["flag"] == "🇹🇷"
+    bare = db.create_node({"name": "bare", "token": "t2"})
+    assert m._serialize_node(bare, {})["flag"] == "🏳️"
+    db.delete_node(node["id"])
+    db.delete_node(bare["id"])
+
+
 def test_the_shared_secret_is_what_gets_handed_over(panel, monkeypatch):
     """The claim carries the panel's own credential, never a made-up one."""
     sent = {}
@@ -308,3 +380,14 @@ def test_claiming_carries_the_minted_secret_when_no_env_is_set(panel, monkeypatc
     out = __import__("asyncio").run(m._claim_node("https://node.example.com", "https://panel.example"))
     assert out["ok"] is True
     assert sent["json"]["secret"] == db.get_meta("panel_secret") != ""
+
+
+def test_identity_remains_available_when_own_geolocation_fails(panel, monkeypatch):
+    def unavailable():
+        raise TimeoutError("GeoIP unavailable")
+    monkeypatch.setattr(m, "detect_own_location", unavailable)
+    response = panel.get("/api/node/discover")
+    assert response.status_code == 200
+    card = response.json()
+    assert card["app"] == "titan" and "accepts_bootstrap" in card
+    assert card["country_code"] == "" and card["flag"] == "🏳️"
