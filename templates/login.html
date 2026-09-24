@@ -710,10 +710,22 @@ html[dir="rtl"] .private{letter-spacing:0;direction:rtl;text-align:start}
 <script>
 (()=>{
   const $=s=>document.querySelector(s);
-  const tr=(key,vars)=>I18N.t(key,vars);
+  const tr=(key,vars)=>{
+    try{
+      if(window.I18N && typeof I18N.t === "function") return I18N.t(key,vars);
+    }catch(_){}
+    return key;
+  };
   const password=$("#password"), eye=$("#eye"), toast=$("#toast");
   const language=$("#language"), langbtn=$("#langbtn"), langlabel=$("#langlabel");
-  const show=m=>{toast.textContent=m;toast.classList.add("show");clearTimeout(show.t);show.t=setTimeout(()=>toast.classList.remove("show"),1800)};
+  const show=m=>{
+    if(!toast) return;
+    toast.textContent=m;
+    toast.classList.add("show");
+    clearTimeout(show.t);
+    show.t=setTimeout(()=>toast.classList.remove("show"),2000);
+  };
+
   const savedToken=(()=>{try{return localStorage.getItem("titan_token")||"";}catch(_){return "";}})();
   const meHeaders=savedToken?{"Authorization":"Bearer "+savedToken}:{};
   fetch("/api/me",{credentials:"same-origin",headers:meHeaders}).then(r=>r.json()).then(d=>{
@@ -723,41 +735,69 @@ html[dir="rtl"] .private{letter-spacing:0;direction:rtl;text-align:start}
     }
   }).catch(()=>{});
 
-  eye.onclick=()=>{
-    const v=password.type==="text";
-    password.type=v?"password":"text";
-    eye.setAttribute("data-i18n-aria",v?"show_password":"hide_password");
-    eye.setAttribute("aria-label",tr(v?"show_password":"hide_password"));
-    eye.innerHTML=v
-      ? '<svg viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 10.7a2 2 0 0 0 2.7 2.7"/><path d="M9.9 5.2A10.9 10.9 0 0 1 12 5c5.4 0 9 5 9 5a16.6 16.6 0 0 1-3.1 3.3"/><path d="M6.2 6.3C3.9 7.9 3 10 3 10s3.6 5 9 5c1 0 1.9-.2 2.8-.5"/></svg>'
-      : '<svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>';
-  };
-  langbtn.onclick=e=>{e.stopPropagation();const o=language.classList.toggle("open");langbtn.setAttribute("aria-expanded",o)};
+  if(eye && password){
+    eye.onclick=()=>{
+      const v=password.type==="text";
+      password.type=v?"password":"text";
+      eye.setAttribute("data-i18n-aria",v?"show_password":"hide_password");
+      eye.setAttribute("aria-label",tr(v?"show_password":"hide_password"));
+      eye.innerHTML=v
+        ? '<svg viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 10.7a2 2 0 0 0 2.7 2.7"/><path d="M9.9 5.2A10.9 10.9 0 0 1 12 5c5.4 0 9 5 9 5a16.6 16.6 0 0 1-3.1 3.3"/><path d="M6.2 6.3C3.9 7.9 3 10 3 10s3.6 5 9 5c1 0 1.9-.2 2.8-.5"/></svg>'
+        : '<svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>';
+    };
+  }
+
   const paintLanguage=()=>{
-    langlabel.textContent=tr(I18N.lang==='en'?'lang_en':'lang_fa');
-    langbtn.setAttribute('aria-label',tr('language'));
-    toast.classList.remove('show');
+    try{
+      const lang = (window.I18N && I18N.lang) || "fa";
+      if(langlabel) langlabel.textContent = lang === "en" ? "English" : "فارسی";
+      if(langbtn) langbtn.setAttribute("aria-label", tr("language"));
+      if(toast) toast.classList.remove("show");
+    }catch(_){}
   };
-  document.addEventListener('titan:lang',paintLanguage);
+  document.addEventListener("titan:lang", paintLanguage);
   paintLanguage();
-  language.querySelectorAll('[data-lang]').forEach(button=>button.onclick=()=>{
-    I18N.setLang(button.dataset.lang);
-    language.classList.remove('open');
-    langbtn.setAttribute('aria-expanded','false');
-    show(tr('language_set'));
-  });
-  const closeLanguage=()=>{language.classList.remove('open');langbtn.setAttribute('aria-expanded','false')};
-  document.onclick=e=>{if(!language.contains(e.target))closeLanguage()};
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLanguage()});
+
+  if(langbtn && language){
+    langbtn.onclick=e=>{
+      e.stopPropagation();
+      const o=language.classList.toggle("open");
+      langbtn.setAttribute("aria-expanded", String(o));
+    };
+    language.querySelectorAll("[data-lang]").forEach(button=>{
+      button.onclick=e=>{
+        e.stopPropagation();
+        const selected = button.dataset.lang;
+        try{
+          if(window.I18N && typeof I18N.setLang === "function") I18N.setLang(selected);
+        }catch(_){}
+        language.classList.remove("open");
+        langbtn.setAttribute("aria-expanded","false");
+        show(tr("language_set"));
+      };
+    });
+    const closeLanguage=()=>{language.classList.remove("open");langbtn.setAttribute("aria-expanded","false");};
+    document.addEventListener("click",e=>{if(!language.contains(e.target))closeLanguage();});
+    document.addEventListener("keydown",e=>{if(e.key==="Escape")closeLanguage();});
+  }
+
   let loggingIn=false;
-  $("#form").onsubmit=async e=>{
-    e.preventDefault();
+  const doLogin=async()=>{
     if(loggingIn) return;
-    const pass=(password.value||"").trim();
-    if(!pass){show(tr("login_enter_password")); password.focus(); return;}
+    const pass=(password ? password.value : "").trim();
+    if(!pass){
+      show(tr("login_enter_password"));
+      if(password) password.focus();
+      return;
+    }
     loggingIn=true;
     const btn=$("#form .submit");
-    if(btn){btn.disabled=true; btn.style.opacity=".7"; const sp=btn.querySelector("span"); if(sp) sp.textContent=tr("login_pending");}
+    if(btn){
+      btn.disabled=true;
+      btn.style.opacity=".7";
+      const sp=btn.querySelector("span");
+      if(sp) sp.textContent=tr("login_pending");
+    }
     show(tr("login_checking"));
     try{
       const r=await fetch("/api/login",{
@@ -792,11 +832,37 @@ html[dir="rtl"] .private{letter-spacing:0;direction:rtl;text-align:start}
       show(tr("login_network_error"));
     }finally{
       loggingIn=false;
-      if(btn){btn.disabled=false; btn.style.opacity=""; const sp=btn.querySelector("span"); if(sp) sp.textContent=tr("login_submit"); }
+      if(btn){
+        btn.disabled=false;
+        btn.style.opacity="";
+        const sp=btn.querySelector("span");
+        if(sp) sp.textContent=tr("login_submit");
+      }
     }
   };
-  document.querySelectorAll(".support button").forEach(b=>b.onclick=()=>show(tr(b.dataset.msgKey)));
-  $("#forgot").onclick=()=>show(tr("login_reset_message"));
+
+  const formEl=$("#form");
+  if(formEl){
+    formEl.onsubmit=e=>{
+      e.preventDefault();
+      doLogin();
+    };
+  }
+  const submitBtn=$("#form .submit");
+  if(submitBtn){
+    submitBtn.onclick=e=>{
+      e.preventDefault();
+      doLogin();
+    };
+  }
+
+  document.querySelectorAll(".support button").forEach(b=>{
+    b.onclick=()=>show(tr(b.dataset.msgKey));
+  });
+  const forgotBtn=$("#forgot");
+  if(forgotBtn){
+    forgotBtn.onclick=()=>show(tr("login_reset_message"));
+  }
 })();
 </script>
 </body>
