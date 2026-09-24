@@ -819,13 +819,15 @@ html[dir="rtl"] .private{letter-spacing:0;direction:rtl;text-align:start}
         return;
       }
       const detail=(d.detail||"");
+      console.warn("Login response:", r.status, d);
       if(r.status===429 && detail.startsWith("locked")){
         const secs=parseInt((detail.split(":")[1]||"60"),10);
         show(tr("login_locked",{seconds:secs}));
-      }else if(r.status===401){
+      }else if(r.status===401 || detail==="invalid-credentials"){
         show(tr("login_wrong_password"));
       }else{
-        show(tr("login_failed"));
+        const msg = (detail && tr(detail) !== detail) ? tr(detail) : (detail || tr("login_failed"));
+        show(msg);
       }
     }catch(err){
       console.error(err);
