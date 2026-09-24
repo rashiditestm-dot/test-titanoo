@@ -425,11 +425,19 @@ def generate_xray_config() -> dict:
             "servers": [
                 "https+local://1.1.1.1/dns-query",
                 "https+local://8.8.8.8/dns-query",
+                "https+local://9.9.9.9/dns-query",
                 "1.1.1.1",
                 "8.8.8.8",
+                "9.9.9.9",
                 "localhost",
             ],
             "queryStrategy": "UseIPv4",
+            "tag": "dns",
+        },
+        "dnsMapping": {
+            # Common SNI overrides for better compatibility
+            "www.microsoft.com": "104.210.10.10",
+            "www.google.com": "142.250.179.14",
         },
         "api": {"tag": "api", "services": ["StatsService"]},
         "stats": {},

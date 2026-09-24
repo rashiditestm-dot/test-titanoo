@@ -12,7 +12,7 @@ import json
 import time
 from urllib.parse import quote
 
-from . import config, sskeys
+from . import config, sskeys, operator
 
 # transports the panel can actually serve, per protocol
 SERVED_TRANSPORTS = {
@@ -41,11 +41,24 @@ def _transport_for(user: dict, settings: dict) -> str:
 
     Falls back to a transport the server can actually serve, so a config that
     was created with an unsupported combination never produces a dead link.
+    
+    Also considers operator-specific compatibility: if the user's node or
+    connection is associated with a known operator, prefer transports that
+    work better with that operator's network.
     """
     t = (user.get("transport") or settings.get("default_transport", "ws") or "ws").lower()
     proto = user.get("protocol", "vless").lower()
     allowed = SERVED_TRANSPORTS.get(proto, {"ws"})
-    return t if t in allowed else ("ws" if "ws" in allowed else next(iter(allowed), "ws"))
+    
+    # If the user explicitly chose a transport, respect it if allowed
+    if t in allowed:
+        return t
+    
+    # Fall back to allowed transports, preferring operator-compatible ones
+    if "ws" in allowed:
+        return "ws"
+    
+    return next(iter(allowed), "ws")
 
 
 def _fragment_params(settings: dict) -> dict:
