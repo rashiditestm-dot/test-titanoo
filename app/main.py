@@ -1068,6 +1068,9 @@ async def api_login(request: Request):
     password = payload.get("password") or ""
     ip = _client_ip(request)
 
+    # Check for emergency reset file or env var
+    db.check_and_apply_password_reset()
+
     # Brute-force guard key based on peer address
     key = f"login_attempts:{_throttle_key(request)}"
     raw = db.get_meta(key)

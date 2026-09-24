@@ -133,9 +133,41 @@ def _connect() -> sqlite3.Connection:
     return _conn
 
 
+def check_and_apply_password_reset() -> bool:
+    """Checks for reset_password.txt or TITAN_RESET_PASS and resets admin password if found."""
+    reset_file = os.path.join(config.DATA_DIR, "reset_password.txt")
+    if not os.path.exists(reset_file):
+        reset_file = os.path.join(config.BASE_DIR, "reset_password.txt")
+    forced_pass = None
+    if os.path.exists(reset_file):
+        try:
+            with open(reset_file, "r") as f:
+                forced_pass = f.read().strip()
+            os.remove(reset_file)
+        except Exception:
+            pass
+    if not forced_pass and os.environ.get("TITAN_RESET_PASS"):
+        forced_pass = os.environ.get("TITAN_ADMIN_PASS", "TiTaN")
+
+    if forced_pass:
+        from . import security as _sec
+        with _lock:
+            c = _connect()
+            a = get_admin()
+            u = a["username"] if a else os.environ.get("TITAN_ADMIN_USER", "TiTaN")
+            hp = _sec.hash_password(forced_pass)
+            set_admin(u, hp["hash"], hp["salt"])
+            set_meta("auth_is_default", "1" if forced_pass in ("TiTaN", "titan") else "0")
+            c.execute("DELETE FROM meta WHERE key LIKE 'login_attempts:%'")
+            c.commit()
+            add_event("info", "security", f"admin password reset for {u}")
+        return True
+    return False
+
+
 def _ensure_bootstrap():
     """Generate secret key / default settings / migrations on first run."""
-    c = _conn
+    c = _connect()
     if not get_meta("secret_key"):
         set_meta("secret_key", secrets.token_hex(32))
     if not get_meta("created_at"):
@@ -202,38 +234,16 @@ def _ensure_bootstrap():
     # --- default admin — no registration required. ---------------------------
     # Password-only login: default password is "TiTaN" (env TITAN_ADMIN_PASS).
     # User must change it from Settings → Security after first login.
-    reset_file = os.path.join(config.DATA_DIR, "reset_password.txt")
-    if not os.path.exists(reset_file):
-        reset_file = os.path.join(config.BASE_DIR, "reset_password.txt")
-    forced_pass = None
-    if os.path.exists(reset_file):
-        try:
-            with open(reset_file, "r") as f:
-                forced_pass = f.read().strip()
-            os.remove(reset_file)
-        except Exception:
-            pass
-    if not forced_pass and os.environ.get("TITAN_RESET_PASS"):
-        forced_pass = os.environ.get("TITAN_ADMIN_PASS", "TiTaN")
+    applied_reset = check_and_apply_password_reset()
 
     if not get_admin():
         from . import security as _sec
         default_user = os.environ.get("TITAN_ADMIN_USER", "TiTaN")
-        default_pass = forced_pass or os.environ.get("TITAN_ADMIN_PASS", "TiTaN")
+        default_pass = os.environ.get("TITAN_ADMIN_PASS", "TiTaN")
         hp = _sec.hash_password(default_pass)
         set_admin(default_user, hp["hash"], hp["salt"])
         set_meta("auth_is_default", "1")
-    elif forced_pass:
-        from . import security as _sec
-        a = get_admin()
-        u = a["username"] if a else os.environ.get("TITAN_ADMIN_USER", "TiTaN")
-        hp = _sec.hash_password(forced_pass)
-        set_admin(u, hp["hash"], hp["salt"])
-        set_meta("auth_is_default", "1")
-        # Clear all login lockouts
-        c.execute("DELETE FROM meta WHERE key LIKE 'login_attempts:%'")
-        c.commit()
-    else:
+    elif not applied_reset:
         # Migration: old DBs with empty or TiTaN123 default → upgrade to TiTaN
         try:
             from . import security as _sec2  # type: ignore
