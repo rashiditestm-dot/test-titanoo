@@ -125,7 +125,19 @@
     return `<button class="ico-btn${variant?' '+variant:''}" data-tip="${esc(tip)}" data-i18n-tip="${tipKey}" aria-label="${esc(tip)}" ${a}>${icon(name)}</button>`;
   }
 
-  async function apiJson(url, opts={}){ opts.credentials='same-origin'; opts.headers=Object.assign({'Content-Type':'application/json'},opts.headers||{}); if(opts.body&&typeof opts.body!=='string') opts.body=JSON.stringify(opts.body); const r=await fetch(url,opts); let d={}; try{d=await r.json();}catch(e){ if(!r.ok) throw new Error(r.statusText); } if(!r.ok) throw new Error(d.detail||d.message||r.statusText); return d; }
+  async function apiJson(url, opts={}){
+    opts.credentials='same-origin';
+    opts.headers=Object.assign({'Content-Type':'application/json'},opts.headers||{});
+    try{
+      const tok=localStorage.getItem('titan_token');
+      if(tok && !opts.headers['Authorization']) opts.headers['Authorization']='Bearer '+tok;
+    }catch(_){}
+    if(opts.body&&typeof opts.body!=='string') opts.body=JSON.stringify(opts.body);
+    const r=await fetch(url,opts);
+    let d={}; try{d=await r.json();}catch(e){ if(!r.ok) throw new Error(r.statusText); }
+    if(!r.ok) throw new Error(d.detail||d.message||r.statusText);
+    return d;
+  }
 
   let toastEl=$('#titanToast');
   if(!toastEl){ toastEl=document.createElement('div'); toastEl.id='titanToast'; toastEl.style.cssText='position:fixed;left:50%;bottom:22px;transform:translate(-50%,14px);opacity:0;pointer-events:none;padding:10px 16px;border-radius:12px;color:#eeeaff;background:rgba(6,8,35,.94);border:1px solid rgba(104,77,255,.45);box-shadow:0 0 24px rgba(75,40,255,.18);backdrop-filter:blur(12px);transition:.24s;z-index:9999;font-size:12px;'; document.body.appendChild(toastEl); }
@@ -1538,7 +1550,10 @@
         lo.style.cssText='width:32px;height:32px;border-radius:9px;border:1px solid rgba(151,116,255,.18);background:rgba(91,49,176,.1);color:#c5c5df;display:grid;place-items:center;cursor:pointer;margin-right:6px';
         lo.innerHTML='<svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7"><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/><path d="M13 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"/></svg>';
         lo.onclick=async()=>{
-          if(confirm(tr("logout_confirm"))){ try{ await apiJson('/api/logout',{method:'POST'}); location.href='/login'; }catch(e){ location.href='/login'; } }
+          if(confirm(tr("logout_confirm"))){
+            try{ localStorage.removeItem('titan_token'); }catch(e){}
+            try{ await apiJson('/api/logout',{method:'POST'}); location.href='/login'; }catch(e){ location.href='/login'; }
+          }
         };
         const actions=document.querySelector('.actions');
         if(actions) actions.appendChild(lo);

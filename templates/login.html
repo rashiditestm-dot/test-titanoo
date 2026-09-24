@@ -675,7 +675,7 @@ html[dir="rtl"] .private{letter-spacing:0;direction:rtl;text-align:start}
         <p data-i18n="login_subtitle">خوش آمدید! رمز عبور حساب خود را وارد کنید.</p>
       </div>
 
-      <form class="form" id="form">
+      <form class="form" id="form" action="javascript:void(0);" onsubmit="return false;">
         <div class="password">
           <span class="lock"><svg viewBox="0 0 24 24" filter="url(#iconGlow)"><path d="M7 10V7a5 5 0 0 1 10 0v3"/><rect x="4.5" y="10" width="15" height="11" rx="2"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/><path d="M12 16.2v2.2"/></svg></span>
           <input id="password" type="password" placeholder="رمز عبور" data-i18n-ph="password" data-i18n-aria="password" aria-label="رمز عبور" autocomplete="current-password">
@@ -714,7 +714,14 @@ html[dir="rtl"] .private{letter-spacing:0;direction:rtl;text-align:start}
   const password=$("#password"), eye=$("#eye"), toast=$("#toast");
   const language=$("#language"), langbtn=$("#langbtn"), langlabel=$("#langlabel");
   const show=m=>{toast.textContent=m;toast.classList.add("show");clearTimeout(show.t);show.t=setTimeout(()=>toast.classList.remove("show"),1800)};
-  fetch("/api/me",{credentials:"same-origin"}).then(r=>r.json()).then(d=>{ if(d && d.logged_in) window.location.href="/dashboard"; }).catch(()=>{});
+  const savedToken=(()=>{try{return localStorage.getItem("titan_token")||"";}catch(_){return "";}})();
+  const meHeaders=savedToken?{"Authorization":"Bearer "+savedToken}:{};
+  fetch("/api/me",{credentials:"same-origin",headers:meHeaders}).then(r=>r.json()).then(d=>{
+    if(d && d.logged_in){
+      const dest=savedToken?("/dashboard?token="+encodeURIComponent(savedToken)):"/dashboard";
+      window.location.replace(dest);
+    }
+  }).catch(()=>{});
 
   eye.onclick=()=>{
     const v=password.type==="text";
@@ -753,11 +760,22 @@ html[dir="rtl"] .private{letter-spacing:0;direction:rtl;text-align:start}
     if(btn){btn.disabled=true; btn.style.opacity=".7"; const sp=btn.querySelector("span"); if(sp) sp.textContent=tr("login_pending");}
     show(tr("login_checking"));
     try{
-      const r=await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:"TiTaN",password:pass,remember:true})});
+      const r=await fetch("/api/login",{
+        method:"POST",
+        credentials:"same-origin",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({username:"",password:pass,remember:true})
+      });
       let d={}; try{d=await r.json();}catch(_){}
       if(r.ok && d.ok){
+        if(d.token){
+          try{ localStorage.setItem("titan_token", d.token); }catch(_){}
+        }
         show(tr("login_success"));
-        setTimeout(()=>{window.location.href="/dashboard";},350);
+        setTimeout(()=>{
+          const dest=d.token?("/dashboard?token="+encodeURIComponent(d.token)):"/dashboard";
+          window.location.replace(dest);
+        },200);
         return;
       }
       const detail=(d.detail||"");

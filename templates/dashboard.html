@@ -1070,6 +1070,12 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,[r
 </div>
 <script>
 (function(){
+  try{
+    if(window.location.search.includes('token=')){
+      const q=window.location.search.replace(/([?&])token=[^&]*(&|$)/,'$1').replace(/[?&]$/,'');
+      window.history.replaceState({}, document.title, window.location.pathname + q);
+    }
+  }catch(_){}
   const navItems=[...document.querySelectorAll('.nav-item')];
   const views=[...document.querySelectorAll('.section-view')];
   const map=['dashboard','users','configs','servers','subscriptions','reports','settings','admins','tools'];

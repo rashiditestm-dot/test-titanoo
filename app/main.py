@@ -590,7 +590,7 @@ def _user_is_remote(u: dict) -> bool:
     return routing.serving(u)["target"] == "node"
 
 
-def _set_session(response: Response, username: str, remember: bool = False):
+def _set_session(response: Response, username: str, remember: bool = False) -> str:
     token = security.make_token(db.get_secret_key(), {"u": username})
     # "remember me" extends the session; otherwise it stays short-lived.
     max_age = config.SESSION_MAX_AGE * 4 if remember else config.SESSION_MAX_AGE
@@ -603,6 +603,7 @@ def _set_session(response: Response, username: str, remember: bool = False):
         secure=False,  # TLS terminated by the platform/nginx
         path="/",
     )
+    return token
 
 
 def _current_username(request: Request) -> Optional[str]:
@@ -611,11 +612,20 @@ def _current_username(request: Request) -> Optional[str]:
         return None
     token = request.cookies.get(config.SESSION_COOKIE)
     if not token:
+        # Fallback to Authorization: Bearer <token>
+        auth = request.headers.get("authorization", "").strip()
+        if auth.lower().startswith("bearer "):
+            token = auth[7:].strip()
+    if not token:
+        # Fallback to query param ?token=<token>
+        token = request.query_params.get("token", "").strip()
+    if not token:
         return None
     # Accept both normal (7d) and "remember me" (28d) tokens
+    admin_uname = str(admin["username"]).strip().lower()
     for max_age in (config.SESSION_MAX_AGE * 4, config.SESSION_MAX_AGE):
         data = security.read_token(db.get_secret_key(), token, max_age)
-        if data and data.get("u") == admin["username"]:
+        if data and str(data.get("u", "")).strip().lower() == admin_uname:
             return admin["username"]
     return None
 
@@ -954,31 +964,36 @@ def _serialize_node(node: dict, status: dict) -> dict:
 async def page_root(request: Request):
     # Default admin ("TiTaN") is always present — no setup flow.
     if _current_username(request):
-        return RedirectResponse("/dashboard")
-    return RedirectResponse("/login")
+        return RedirectResponse("/dashboard", status_code=302)
+    return RedirectResponse("/login", status_code=302)
 
 
 @app.get("/setup", response_class=HTMLResponse)
 async def page_setup(request: Request):
     # Registration is disabled — the default admin ("TiTaN") is created
     # automatically on first run. Route everything to the login page.
-    return RedirectResponse("/login")
+    return RedirectResponse("/login", status_code=302)
 
 
 @app.get("/login", response_class=HTMLResponse)
 async def page_login(request: Request):
     if _current_username(request):
-        return RedirectResponse("/dashboard")
+        return RedirectResponse("/dashboard", status_code=302)
     return templates.TemplateResponse(request, "login.html", {"app_version": APP_VERSION})
 
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def page_dashboard(request: Request):
-    if not _current_username(request):
-        return RedirectResponse("/login")
-    return templates.TemplateResponse(
+    user = _current_username(request)
+    if not user:
+        return RedirectResponse("/login", status_code=302)
+    resp = templates.TemplateResponse(
         request, "dashboard.html", {"app_version": APP_VERSION, "panel": APP_NAME}
     )
+    # Refresh/ensure cookie is present if logged in via query token or bearer header
+    if not request.cookies.get(config.SESSION_COOKIE):
+        _set_session(resp, user, remember=True)
+    return resp
 
 
 @app.get("/status/{uid}", response_class=HTMLResponse)
@@ -1014,8 +1029,8 @@ async def api_setup(request: Request):
     db.set_admin(username, hp["hash"], hp["salt"])
     db.add_event("info", "setup", f"admin created: {username}", ip=_client_ip(request))
     resp = JSONResponse({"ok": True})
-    _set_session(resp, username)
-    return resp
+    token = _set_session(resp, username)
+    return JSONResponse({"ok": True, "token": token, "username": username}, headers=resp.headers)
 
 
 @app.post("/api/login")
@@ -1047,20 +1062,29 @@ async def api_login(request: Request):
     ok = False
     effective_user = ""
     if admin:
-        if not username:
-            username = admin["username"]
-        if username == admin["username"] and security.verify_password(
+        admin_uname = admin["username"]
+        # Allow login when username is empty, matches admin username (case-insensitive),
+        # or matches default fallback ("titan" / "TiTaN")
+        is_matching_user = (
+            not username
+            or username.lower() == admin_uname.lower()
+            or username.lower() in ("titan", "admin")
+        )
+        if is_matching_user and security.verify_password(
             password, admin["salt"], admin["password_hash"]
         ):
             ok = True
-            effective_user = admin["username"]
+            effective_user = admin_uname
 
     if ok:
         db.set_meta(key, json.dumps({"count": 0, "locked_until": 0}))
         db.add_event("info", "login", "admin login", ip=ip)
         resp = JSONResponse({"ok": True})
-        _set_session(resp, effective_user or username, remember=bool(payload.get("remember")))
-        return resp
+        token = _set_session(resp, effective_user or username, remember=bool(payload.get("remember")))
+        return JSONResponse(
+            {"ok": True, "token": token, "username": effective_user or username},
+            headers=resp.headers,
+        )
 
     count += 1
     # Penalise the *failed* attempt, after authentication has already been
