@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title data-i18n="login_page_title">ورود — TiTaN</title>
 <link rel="stylesheet" href="/static/css/fonts.css">
+<script src="/static/js/i18n.js?v={{ app_version }}"></script>
 <style>
 :root{
   --bg:#02051a;
@@ -706,7 +707,6 @@ html[dir="rtl"] .private{letter-spacing:0;direction:rtl;text-align:start}
 </main>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="/static/js/i18n.js?v={{ app_version }}"></script>
 <script>
 (()=>{
   const $=s=>document.querySelector(s);
@@ -804,7 +804,7 @@ html[dir="rtl"] .private{letter-spacing:0;direction:rtl;text-align:start}
         method:"POST",
         credentials:"same-origin",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({username:"",password:pass,remember:true})
+        body:JSON.stringify({username:"TiTaN",password:pass,remember:true})
       });
       let d={}; try{d=await r.json();}catch(_){}
       if(r.ok && d.ok){

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="stylesheet" href="/static/css/fonts.css">
 <title data-i18n="dashboard_page_title">داشبورد — TiTaN</title>
+<script src="/static/js/i18n.js?v={{ app_version }}"></script>
 <style>
 
 
@@ -1273,12 +1274,13 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,[r
   });
 
   // Initialize I18N for new elements
-  I18N.apply();
+  try {
+    if (window.I18N && typeof I18N.apply === 'function') I18N.apply();
+  } catch(_) {}
 
   show('dashboard',0);
 })();
 </script>
-  <script src="/static/js/i18n.js"></script>
   <script src="/static/js/features.js"></script>
   <script src="/static/js/country-flags.js"></script>
   <script src="/static/js/titan-bridge.js"></script>
