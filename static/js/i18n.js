@@ -793,3 +793,34 @@ const I18N = (() => {
   apply();
   return { t, keyFor, apply, setLang, get lang() { return lang; }, get locale() { return lang === 'fa' ? 'fa-IR' : 'en-GB'; } };
 })();
+
+// === Features: Support Center, Smart Refresh, Notification Center ===
+  support_center_title: ["پشتیبانی","Support Center"],
+  support_email: ["پشتیبانی ایمیل","Support Email"],
+  support_status: ["وضعیت سرویس","Service Status"],
+  support_docs: ["مستندات","Documentation"],
+  support_feedback: [" بازخورد"," Send Feedback"],
+  support_claim: ["دریافت پنل","Claim Panel"],
+  support_node_detect: ["تشخیص خودکار نود","Auto-detect Node"],
+  
+  smart_refresh_title: ["بروزرسانی هوشمند","Smart Refresh"],
+  smart_refresh_loading: ["در حال بروزرسانی...","Updating..."],
+  smart_refresh_success: ["اطلاعات با موفقیت بروزرسانی شد","Information updated successfully"],
+  smart_refresh_error: ["بروزرسانی اطلاعات ناموفق بود","Failed to update information"],
+  
+  notification_center_title: ["مرکز اعلان‌ها","Notification Center"],
+  notification_no_items: ["اعلانی وجود ندارد","No notifications"],
+  notification_mark_read: ["کهoplumealler","Mark all read"],
+  notification_clear: ["پاک کردن همه","Clear all"],
+  notification_loading: ["در حال بارگذاری...","Loading..."],
+  
+  // Notification types
+  notify_expiry_soon: ["انقضا نزدیک","Expiry soon"],
+  notify_traffic_high: ["مصومیت بالاترí","Traffic high"],
+  notify_node_online: ["نود آنلاین شد","Node online"],
+  notify_node_offline: ["نود آفلاین شد","Node offline"],
+  notify_sub_changed: ["تغییر اشتراک","Subscription changed"],
+  notify_system: ["پیام سیستم","System message"],
+  
+  // Sidebar fixes
+  sidebar_scroll_off: ["در دسترس","Available"],

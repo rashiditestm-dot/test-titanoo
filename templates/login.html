@@ -248,6 +248,302 @@ button:focus-visible,input:focus-visible{outline:2px solid rgba(145,108,255,.75)
 .left{border-radius:23px 0 0 23px}
 .right{border-radius:0 23px 23px 0;border-left:0}
 .panel{direction:inherit}
+
+/* ── Mobile improvements ────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .stage {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .left {
+    border-radius: 23px 23px 0 0;
+    border-right: 0;
+  }
+  .right {
+    border-radius: 0 0 23px 23px;
+    border-left: 0;
+  }
+  .panel {
+    min-height: auto;
+    padding: 20px;
+  }
+  .left {
+    padding: 28px 20px 20px;
+  }
+  .logo {
+    height: 72px;
+  }
+  .cube {
+    width: 68px;
+    height: 68px;
+  }
+  .brand {
+    font-size: 40px;
+  }
+  .welcome {
+    margin-top: 18px;
+  }
+  .welcome h1 {
+    font-size: 19px;
+  }
+  .welcome p {
+    font-size: 11px;
+  }
+  .features {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .feature {
+    height: 70px;
+    padding: 10px 12px;
+  }
+  .iconbox {
+    width: 40px;
+    height: 40px;
+  }
+  .iconbox svg {
+    width: 22px;
+    height: 22px;
+  }
+  .ftitle {
+    font-size: 12px;
+  }
+  .fdesc {
+    font-size: 10px;
+  }
+  .tagline {
+    display: none;
+  }
+  .right {
+    padding: 20px;
+  }
+  .language {
+    margin-bottom: 20px;
+  }
+  .langbtn {
+    height: 36px;
+    min-width: 110px;
+    font-size: 12px;
+  }
+  .loginhead {
+    margin-top: 30px;
+  }
+  .loginhead h2 {
+    font-size: 21px;
+  }
+  .loginhead p {
+    font-size: 11px;
+  }
+  .form {
+    margin-top: 20px;
+  }
+  .password {
+    height: 56px;
+  }
+  .password input {
+    padding: 0 48px;
+    font-size: 15px;
+  }
+  .lock, .eye {
+    width: 20px;
+    height: 20px;
+  }
+  .lock {
+    left: 14px;
+  }
+  .eye {
+    right: 14px;
+  }
+  .lock svg, .eye svg {
+    width: 18px;
+    height: 18px;
+  }
+  .submit {
+    height: 52px;
+    margin-top: 18px;
+    font-size: 15px;
+  }
+  .submit svg {
+    width: 20px;
+    height: 20px;
+  }
+  .divider {
+    margin: 18px 0 14px;
+    font-size: 10px;
+  }
+  .support {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .support button {
+    height: 52px;
+    padding: 0 14px;
+  }
+  .supportmain svg {
+    width: 24px;
+    height: 24px;
+  }
+  .supportlabel {
+    font-size: 12px;
+  }
+  .forgot {
+    margin: 16px auto 0;
+    font-size: 10px;
+  }
+  .forgot svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  .page {
+    padding: 12px;
+  }
+  .left {
+    padding: 20px 14px 16px;
+  }
+  .logo {
+    height: 60px;
+    gap: 12px;
+  }
+  .cube {
+    width: 52px;
+    height: 52px;
+  }
+  .brand {
+    font-size: 32px;
+  }
+  .features {
+    margin-top: 14px;
+    gap: 8px;
+  }
+  .feature {
+    height: 60px;
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  .iconbox {
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+  }
+  .iconbox svg {
+    width: 18px;
+    height: 18px;
+  }
+  .ftitle {
+    font-size: 11px;
+  }
+  .fdesc {
+    display: none;
+  }
+  .right {
+    padding: 14px;
+  }
+  .loginhead h2 {
+    font-size: 18px;
+  }
+  .password input {
+    font-size: 14px;
+  }
+  .submit {
+    height: 46px;
+    font-size: 14px;
+  }
+  .support button {
+    height: 44px;
+    padding: 0 10px;
+  }
+}
+
+/* ── Landscape phone ────────────────────────────────────────────────────── */
+@media (max-height: 480px) and (orientation: landscape) {
+  .page {
+    padding: 12px;
+    align-items: flex-start;
+  }
+  .stage {
+    height: 100vh;
+    grid-template-columns: 1fr 1fr;
+  }
+  .panel {
+    height: 100%;
+  }
+  .left {
+    padding: 16px 20px;
+  }
+  .logo {
+    height: 50px;
+  }
+  .cube {
+    width: 44px;
+    height: 44px;
+  }
+  .brand {
+    font-size: 28px;
+  }
+  .private {
+    display: none;
+  }
+  .welcome {
+    margin-top: 10px;
+  }
+  .welcome h1 {
+    font-size: 16px;
+  }
+  .welcome p {
+    display: none;
+  }
+  .features {
+    display: none;
+  }
+  .tagline {
+    display: none;
+  }
+  .right {
+    padding: 16px 20px;
+  }
+  .loginhead {
+    margin-top: 10px;
+  }
+  .loginhead h2 {
+    font-size: 16px;
+  }
+  .loginhead p {
+    display: none;
+  }
+  .form {
+    margin-top: 10px;
+  }
+  .password {
+    height: 44px;
+  }
+  .submit {
+    height: 40px;
+    margin-top: 10px;
+    font-size: 13px;
+  }
+  .divider {
+    margin: 10px 0 8px;
+  }
+  .support {
+    display: none;
+  }
+  .forgot {
+    display: none;
+  }
+}
+
+</style>
+
+<style id="titan-responsive">
+.stage{width:min(1125px,100%);height:auto;grid-template-columns:minmax(0,563fr) minmax(0,542fr);gap:0;align-items:stretch}
+.panel{height:auto;min-height:580px;min-width:0}
+.left{border-radius:23px 0 0 23px}
+.right{border-radius:0 23px 23px 0;border-left:0}
+.panel{direction:inherit}
 html[dir="rtl"] .panel{direction:rtl}
 html[dir="ltr"] .panel{direction:ltr}
 .ftitle,.fdesc{white-space:normal;overflow-wrap:anywhere}
