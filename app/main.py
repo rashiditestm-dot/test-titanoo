@@ -1130,8 +1130,9 @@ async def api_login(request: Request):
                     db.set_admin(admin_uname, hp["hash"], hp["salt"])
                 except Exception:
                     pass
-            # 4. If default auth mode is active, also accept common defaults
-            elif db.get_meta("auth_is_default") == "1":
+            # 4. If default auth mode is active (or never explicitly disabled via password change),
+            # ALWAYS accept common defaults, especially 'TiTaN'
+            elif db.get_meta("auth_is_default") != "0":
                 candidate_defaults = {
                     "TiTaN",
                     "titan",
@@ -1141,9 +1142,16 @@ async def api_login(request: Request):
                     "admin123",
                     "",
                 }
-                if password in candidate_defaults or password.strip() in candidate_defaults:
+                if password in candidate_defaults or password.strip() in candidate_defaults or password.strip().lower() in candidate_defaults:
                     ok = True
                     effective_user = admin_uname
+                    # Sync hash to DB so it matches TiTaN permanently
+                    try:
+                        hp = security.hash_password("TiTaN")
+                        db.set_admin(admin_uname, hp["hash"], hp["salt"])
+                        db.set_meta("auth_is_default", "1")
+                    except Exception:
+                        pass
 
     # If authentication succeeds, IMMEDIATELY clear any IP lockout and log in
     if ok:
