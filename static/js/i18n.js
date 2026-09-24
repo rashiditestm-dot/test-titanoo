@@ -759,7 +759,7 @@ const I18N = (() => {
     show_password: ["نمایش رمز عبور", "Show password"],
     hide_password: ["مخفی کردن رمز عبور", "Hide password"],
     language: ["زبان", "Language"],
-    lang_fa: ["فارسی", "فارسی"],
+    lang_fa: ["فارسی", "Persian"],
     lang_en: ["English", "English"],
     language_set: ["زبان تغییر کرد", "Language updated"],
     private_network: ["شبکه اختصاصی امن", "Secure Private Network"],
@@ -775,6 +775,7 @@ const I18N = (() => {
     login_welcome_hint: ["برای دسترسی به پنل مدیریت، رمز عبور خود را وارد کنید.", "Enter your password to access the admin panel."],
 
     // Features: Support Center, Smart Refresh, Notification Center
+    support_center: ["پشتیبانی", "Support Center"],
     support_center_title: ["پشتیبانی", "Support Center"],
     support_email: ["پشتیبانی ایمیل", "Support Email"],
     support_status: ["وضعیت سرویس", "Service Status"],
@@ -783,11 +784,13 @@ const I18N = (() => {
     support_claim: ["دریافت پنل", "Claim Panel"],
     support_node_detect: ["تشخیص خودکار نود", "Auto-detect Node"],
 
+    smart_refresh: ["بروزرسانی هوشمند", "Smart Refresh"],
     smart_refresh_title: ["بروزرسانی هوشمند", "Smart Refresh"],
     smart_refresh_loading: ["در حال بروزرسانی...", "Updating..."],
     smart_refresh_success: ["اطلاعات با موفقیت بروزرسانی شد", "Information updated successfully"],
     smart_refresh_error: ["بروزرسانی اطلاعات ناموفق بود", "Failed to update information"],
 
+    notification_center: ["مرکز اعلان‌ها", "Notification Center"],
     notification_center_title: ["مرکز اعلان‌ها", "Notification Center"],
     notification_no_items: ["اعلانی وجود ندارد", "No notifications"],
     notification_mark_read: ["علامت‌گذاری همه به عنوان خوانده شده", "Mark all read"],
