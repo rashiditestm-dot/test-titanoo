@@ -202,13 +202,37 @@ def _ensure_bootstrap():
     # --- default admin — no registration required. ---------------------------
     # Password-only login: default password is "TiTaN" (env TITAN_ADMIN_PASS).
     # User must change it from Settings → Security after first login.
+    reset_file = os.path.join(config.DATA_DIR, "reset_password.txt")
+    if not os.path.exists(reset_file):
+        reset_file = os.path.join(config.BASE_DIR, "reset_password.txt")
+    forced_pass = None
+    if os.path.exists(reset_file):
+        try:
+            with open(reset_file, "r") as f:
+                forced_pass = f.read().strip()
+            os.remove(reset_file)
+        except Exception:
+            pass
+    if not forced_pass and os.environ.get("TITAN_RESET_PASS"):
+        forced_pass = os.environ.get("TITAN_ADMIN_PASS", "TiTaN")
+
     if not get_admin():
         from . import security as _sec
         default_user = os.environ.get("TITAN_ADMIN_USER", "TiTaN")
-        default_pass = os.environ.get("TITAN_ADMIN_PASS", "TiTaN")
+        default_pass = forced_pass or os.environ.get("TITAN_ADMIN_PASS", "TiTaN")
         hp = _sec.hash_password(default_pass)
         set_admin(default_user, hp["hash"], hp["salt"])
         set_meta("auth_is_default", "1")
+    elif forced_pass:
+        from . import security as _sec
+        a = get_admin()
+        u = a["username"] if a else os.environ.get("TITAN_ADMIN_USER", "TiTaN")
+        hp = _sec.hash_password(forced_pass)
+        set_admin(u, hp["hash"], hp["salt"])
+        set_meta("auth_is_default", "1")
+        # Clear all login lockouts
+        c.execute("DELETE FROM meta WHERE key LIKE 'login_attempts:%'")
+        c.commit()
     else:
         # Migration: old DBs with empty or TiTaN123 default → upgrade to TiTaN
         try:

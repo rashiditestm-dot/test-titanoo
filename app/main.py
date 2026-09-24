@@ -1068,9 +1068,7 @@ async def api_login(request: Request):
     password = payload.get("password") or ""
     ip = _client_ip(request)
 
-    # Brute-force guard. The counter is keyed on the *peer* address, never on
-    # X-Forwarded-For: a client-supplied header would let an attacker mint a
-    # fresh budget per attempt (10 forged IPs used to be 10 free tries).
+    # Brute-force guard key based on peer address
     key = f"login_attempts:{_throttle_key(request)}"
     raw = db.get_meta(key)
     locked_until = 0.0
@@ -1082,11 +1080,18 @@ async def api_login(request: Request):
             count = blob.get("count", 0)
         except (json.JSONDecodeError, TypeError):
             pass
-    if locked_until > time.time():
-        raise HTTPException(429, f"locked:{int(locked_until - time.time())}")
+
     admin = db.get_admin()
-    # Password-only login: username is optional. If not provided, use admin's username.
-    # The password is always verified, even in default mode (default pass = TiTaN).
+    if not admin:
+        # Auto-create admin if database is unseeded
+        from . import security as _sec
+        default_user = os.environ.get("TITAN_ADMIN_USER", "TiTaN")
+        default_pass = os.environ.get("TITAN_ADMIN_PASS", "TiTaN")
+        hp = _sec.hash_password(default_pass)
+        db.set_admin(default_user, hp["hash"], hp["salt"])
+        db.set_meta("auth_is_default", "1")
+        admin = db.get_admin()
+
     ok = False
     effective_user = ""
     if admin:
@@ -1099,22 +1104,32 @@ async def api_login(request: Request):
             or username.lower() in ("titan", "admin")
         )
         if is_matching_user:
-            # Check exact password first
+            # 1. Check exact stored password
             if security.verify_password(password, admin["salt"], admin["password_hash"]):
                 ok = True
                 effective_user = admin_uname
-            # Check trimmed password
+            # 2. Check trimmed password
             elif password.strip() != password and security.verify_password(
                 password.strip(), admin["salt"], admin["password_hash"]
             ):
                 ok = True
                 effective_user = admin_uname
-            # If default auth mode is active, also accept common defaults
+            # 3. Check against TITAN_ADMIN_PASS environment variable override
+            elif os.environ.get("TITAN_ADMIN_PASS") and (
+                password == os.environ.get("TITAN_ADMIN_PASS")
+                or password.strip() == os.environ.get("TITAN_ADMIN_PASS")
+            ):
+                ok = True
+                effective_user = admin_uname
+                # Sync hash to DB so it persists
+                try:
+                    hp = security.hash_password(os.environ.get("TITAN_ADMIN_PASS"))
+                    db.set_admin(admin_uname, hp["hash"], hp["salt"])
+                except Exception:
+                    pass
+            # 4. If default auth mode is active, also accept common defaults
             elif db.get_meta("auth_is_default") == "1":
-                default_env_pass = os.environ.get("TITAN_ADMIN_PASS", "TiTaN")
                 candidate_defaults = {
-                    default_env_pass,
-                    default_env_pass.lower(),
                     "TiTaN",
                     "titan",
                     "Titan",
@@ -1127,15 +1142,22 @@ async def api_login(request: Request):
                     ok = True
                     effective_user = admin_uname
 
+    # If authentication succeeds, IMMEDIATELY clear any IP lockout and log in
     if ok:
         db.set_meta(key, json.dumps({"count": 0, "locked_until": 0}))
         db.add_event("info", "login", "admin login", ip=ip)
-        resp = JSONResponse({"ok": True})
-        token = _set_session(resp, effective_user or username, remember=bool(payload.get("remember")))
-        return JSONResponse(
-            {"ok": True, "token": token, "username": effective_user or username},
-            headers=resp.headers,
-        )
+        token = security.make_token(db.get_secret_key(), {"u": effective_user or admin["username"]})
+        resp = JSONResponse({
+            "ok": True,
+            "token": token,
+            "username": effective_user or admin["username"],
+        })
+        _set_session(resp, effective_user or admin["username"], remember=bool(payload.get("remember")))
+        return resp
+
+    # If authentication failed, enforce lockout if IP is currently locked
+    if locked_until > time.time():
+        raise HTTPException(429, f"locked:{int(locked_until - time.time())}")
 
     count += 1
     # Penalise the *failed* attempt, after authentication has already been
