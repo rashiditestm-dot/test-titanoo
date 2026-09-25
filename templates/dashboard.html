@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="stylesheet" href="/static/css/fonts.css">
 <title data-i18n="dashboard_page_title">داشبورد — TiTaN</title>
-<script src="/static/js/i18n.js"></script>
 <style>
 
 
@@ -918,22 +917,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,[r
     <label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.2"/><path d="m16 16 4.2 4.2"/></svg><input type="search" placeholder="جستجو…" data-i18n-ph="search_placeholder" aria-label="جستجو" data-i18n-aria="search"><span class="shortcut">Ctrl + K</span></label>
   </div>
   <div class="actions">
-    <!-- Notification Center (was Bell) -->
-    <button class="action" id="notifBtn" aria-label="مرکز اعلان‌ها" data-i18n-aria="notification_center">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17h12l-1.5-2v-4.2a4.5 4.5 0 0 0-9 0V15z"/><path d="M10 20h4"/></svg>
-      <span class="badge" id="notifBadge"></span>
-    </button>
-
-    <!-- Smart Refresh (was Refresh) -->
-    <button class="action" id="refreshBtn" aria-label="بروزرسانی هوشمند" data-i18n-aria="smart_refresh">
-      <svg id="refreshIcon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 8V4m0 0h-4m4 0-3 3a7 7 0 1 0 1.5 8.5"/></svg>
-    </button>
-
-    <!-- Support Center (was Message) -->
-    <button class="action" id="supportBtn" aria-label="پشتیبانی" data-i18n-aria="support_center">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    </button>
-
+    <button class="action" aria-label="اعلان‌ها" data-i18n-aria="notifications"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17h12l-1.5-2v-4.2a4.5 4.5 0 0 0-9 0V15z"/><path d="M10 20h4"/></svg><span class="badge"></span></button>
+    <button class="action" aria-label="رفرش" data-i18n-aria="refresh"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 8V4m0 0h-4m4 0-3 3a7 7 0 1 0 1.5 8.5"/></svg></button>
+    <button class="action" aria-label="پیام‌ها" data-i18n-aria="messages"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v11H9l-4 3z"/><path d="M8 9h8M8 12h5"/></svg><span class="badge"></span></button>
     <div class="profile">
       <div class="avatar"><img src="data:image/jpeg;base64,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" alt=""></div>
       <div class="profile-copy"><div class="profile-name" data-i18n="admin">مدیر</div><div class="profile-role"><span class="dot"></span> <span data-i18n="role_super">ادمین کل</span></div></div>
@@ -1071,12 +1057,6 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,[r
 </div>
 <script>
 (function(){
-  try{
-    if(window.location.search.includes('token=')){
-      const q=window.location.search.replace(/([?&])token=[^&]*(&|$)/,'$1').replace(/[?&]$/,'');
-      window.history.replaceState({}, document.title, window.location.pathname + q);
-    }
-  }catch(_){}
   const navItems=[...document.querySelectorAll('.nav-item')];
   const views=[...document.querySelectorAll('.section-view')];
   const map=['dashboard','users','configs','servers','subscriptions','reports','settings','admins','tools'];
@@ -1109,179 +1089,10 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,[r
     const view=input.closest('.section-view'); const q=input.value.trim().toLowerCase();
     view.querySelectorAll('tbody tr').forEach(row=>row.style.display=row.textContent.toLowerCase().includes(q)?'':'none');
   }));
-
-  // ── Support Center ──────────────────────────────────────────────────────
-  const supportBtn=document.getElementById('supportBtn');
-  const supportOverlay=document.createElement('div');
-  supportOverlay.className='glass-panel-overlay';
-  supportOverlay.innerHTML=`
-    <div class="glass-panel-backdrop"></div>
-    <div class="glass-panel">
-      <div class="glass-panel-header">
-        <div class="glass-panel-title" data-i18n="support_center_title">پشتیبانی</div>
-        <button class="glass-panel-close" aria-label="بستن">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <div class="glass-panel-body">
-        <div class="support-item">
-          <div class="support-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92 11.08 18a1.94 1.94 0 0 1-2.78-.8 1.94 1.94 0 0 1 0-2.88 4.68 4.68 0 0 1 4.65-3.84c1.87-.3 3.39 1.37 2.71 3.2a4.67 4.67 0 0 1-3.8 2.71 4.67 4.67 0 0 1-3.2 0 4.66 4.66 0 0 1-2.72-3.2 4.65 4.65 0 0 1 3.84-4.65c.3-.91-1.12-1.48-2-1.48a4.66 4.66 0 0 1-3.21 2.72 4.66 4.66 0 0 1-2.72-2.72 4.66 4.66 0 0 1 2.72-3.21 4.66 4.66 0 0 1 3.21-2.72c.91-.3 1.48 1.12 1.48 2a4.66 4.66 0 0 1-4.66 4.66 4.66 4.66 0 0 1-4.66-4.66c0-1.12 1.48-1.48 2-1.48a4.67 4.67 0 0 1 3.2 2.71 4.65 4.65 0 0 1-3.84 4.65c-.3.91 1.12 1.48 2 1.48a4.66 4.66 0 0 1 3.21-2.72 4.66 4.66 0 0 1 2.72 2.72 4.66 4.66 0 0 1-2.72 3.21 4.67 4.67 0 0 1-3.2 0 4.66 4.66 0 0 1-3.8-2.71 4.7 4.7 0 0 1 .94-3.2z"/></svg>
-          </div>
-          <div class="support-content">
-            <div class="support-item-title" data-i18n="support_email">پشتیبانی ایمیل</div>
-            <div class="support-item-text">메리츠 팀으로 직접 문의하세요</div>
-            <a href="mailto:support@titann.example" class="support-link" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-              support@titann.example
-            </a>
-          </div>
-        </div>
-        <div class="support-item">
-          <div class="support-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2c6 0 8 4.5 8 11.8z"/><path d="M12 22c3.5-2.5 5-6.5 5-11.8A5 5 0 0 0 12 2c-3.5 2.5-5 6.5-5 11.8z"/></svg>
-          </div>
-          <div class="support-content">
-            <div class="support-item-title" data-i18n="support_status">وضعیت سرویس</div>
-            <div class="support-item-text">시스템 상태를 실시간으로 확인하세요</div>
-            <a href="/status" class="support-link" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="9 13 12 16 15 13"/><path d="M21 5v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              현황 보기
-            </a>
-          </div>
-        </div>
-        <div class="support-item">
-          <div class="support-icon">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-          </div>
-          <div class="support-content">
-            <div class="support-item-title" data-i18n="support_docs">مستندات</div>
-            <div class="support-item-text">설치, 설정, 문제 해결에 대한 문서</div>
-            <a href="/docs" class="support-link" target="_blank" rel="noopener">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="9 13 12 16 15 13"/><path d="M21 5v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              문서 보기
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(supportOverlay);
-
-  supportBtn.addEventListener('click',()=>supportOverlay.classList.toggle('active'));
-  supportOverlay.addEventListener('click',e=>{
-    if(e.target===supportOverlay||e.target.closest('.glass-panel-close')){
-      supportOverlay.classList.remove('active');
-    }
-  });
-  document.addEventListener('keydown',e=>{
-    if(e.key==='Escape'&&supportOverlay.classList.contains('active')){
-      supportOverlay.classList.remove('active');
-    }
-  });
-
-  // ── Notification Center ──────────────────────────────────────────────────
-  const notifBtn=document.getElementById('notifBtn');
-  const notifBadge=document.getElementById('notifBadge');
-  const notifOverlay=document.createElement('div');
-  notifOverlay.className='glass-panel-overlay';
-  notifOverlay.innerHTML=`
-    <div class="glass-panel-backdrop"></div>
-    <div class="glass-panel">
-      <div class="glass-panel-header">
-        <div class="glass-panel-title" data-i18n="notification_center_title">مرکز اعلان‌ها</div>
-        <div style="display:flex;gap:8px">
-          <button class="glass-panel-close" aria-label="بستن">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-          </button>
-        </div>
-      </div>
-      <div class="glass-panel-body" id="notifBody">
-        <div class="notification-empty">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68c-2.36.72-4 3.28-4 6.32v5l-2 2v1h16v-1l-2-2z"/></svg>
-          <div data-i18n="notification_no_items">اعلانی وجود ندارد</div>
-        </div>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(notifOverlay);
-
-  notifBtn.addEventListener('click',()=>notifOverlay.classList.toggle('active'));
-  notifOverlay.addEventListener('click',e=>{
-    if(e.target===notifOverlay||e.target.closest('.glass-panel-close')){
-      notifOverlay.classList.remove('active');
-      updateNotifBadge();
-    }
-  });
-  document.addEventListener('keydown',e=>{
-    if(e.key==='Escape'&&notifOverlay.classList.contains('active')){
-      notifOverlay.classList.remove('active');
-      updateNotifBadge();
-    }
-  });
-
-  function updateNotifBadge(){
-    // Badge بررسی اعلان‌های جدید (هنگام بارگذاری صفحه یا Theorem)
-    const count=Math.floor(Math.random()*3); // تقریبی - باید از API استفاده شود
-    if(count>0){
-      notifBadge.style.display='block';
-      notifBadge.textContent=count;
-    } else {
-      notifBadge.style.display='none';
-    }
-  }
-  updateNotifBadge();
-
-  // ── Smart Refresh ────────────────────────────────────────────────────────
-  const refreshBtn=document.getElementById('refreshBtn');
-  const refreshIcon=document.getElementById('refreshIcon');
-
-  refreshBtn.addEventListener('click',async()=>{
-    refreshBtn.classList.add('loading');
-    refreshIcon.classList.add('loading');
-    const origHTML=refreshIcon.innerHTML;
-
-    try{
-      // Call existing APIs to refresh dashboard data
-      const promises=[
-        fetch('/api/stats',{credentials:'include'}).then(r=>r.json()).catch(()=>null),
-        fetch('/api/events?limit=10',{credentials:'include'}).then(r=>r.json()).catch(()=>null),
-        fetch('/api/users',{credentials:'include'}).then(r=>r.json()).catch(()=>null),
-        fetch('/api/nodes',{credentials:'include'}).then(r=>r.json()).catch(()=>null),
-      ];
-
-      await Promise.allSettled(promises);
-      refreshBtn.classList.remove('loading');
-      refreshBtn.classList.add('success');
-      setTimeout(()=>{
-        refreshBtn.classList.remove('success');
-      },2000);
-
-      // Browser notification if supported
-      if('Notification' in window && Notification.permission==='granted'){
-        new Notification(I18N.t('smart_refresh_success'));
-      }
-
-    } catch(err){
-      refreshBtn.classList.remove('loading');
-      refreshBtn.classList.add('error');
-      setTimeout(()=>{
-        refreshBtn.classList.remove('error');
-      },2000);
-    }
-
-    refreshIcon.classList.remove('loading');
-  });
-
-  // Initialize I18N for new elements
-  try {
-    if (window.I18N && typeof I18N.apply === 'function') I18N.apply();
-  } catch(_) {}
-
   show('dashboard',0);
 })();
 </script>
-  <script src="/static/js/features.js"></script>
+  <script src="/static/js/i18n.js"></script>
   <script src="/static/js/country-flags.js"></script>
   <script src="/static/js/titan-bridge.js"></script>
 </body>

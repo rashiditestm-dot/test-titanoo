@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title data-i18n="login_page_title">ورود — TiTaN</title>
 <link rel="stylesheet" href="/static/css/fonts.css">
-<script src="/static/js/i18n.js"></script>
 <style>
 :root{
   --bg:#02051a;
@@ -249,294 +248,6 @@ button:focus-visible,input:focus-visible{outline:2px solid rgba(145,108,255,.75)
 .left{border-radius:23px 0 0 23px}
 .right{border-radius:0 23px 23px 0;border-left:0}
 .panel{direction:inherit}
-
-/* ── Mobile improvements ────────────────────────────────────────────────── */
-@media (max-width: 480px) {
-  .stage {
-    grid-template-columns: 1fr;
-    height: auto;
-  }
-  .left {
-    border-radius: 23px 23px 0 0;
-    border-right: 0;
-  }
-  .right {
-    border-radius: 0 0 23px 23px;
-    border-left: 0;
-  }
-  .panel {
-    min-height: auto;
-    padding: 20px;
-  }
-  .left {
-    padding: 28px 20px 20px;
-  }
-  .logo {
-    height: 72px;
-  }
-  .cube {
-    width: 68px;
-    height: 68px;
-  }
-  .brand {
-    font-size: 40px;
-  }
-  .welcome {
-    margin-top: 18px;
-  }
-  .welcome h1 {
-    font-size: 19px;
-  }
-  .welcome p {
-    font-size: 11px;
-  }
-  .features {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    margin-top: 20px;
-  }
-  .feature {
-    height: 70px;
-    padding: 10px 12px;
-  }
-  .iconbox {
-    width: 40px;
-    height: 40px;
-  }
-  .iconbox svg {
-    width: 22px;
-    height: 22px;
-  }
-  .ftitle {
-    font-size: 12px;
-  }
-  .fdesc {
-    font-size: 10px;
-  }
-  .tagline {
-    display: none;
-  }
-  .right {
-    padding: 20px;
-  }
-  .language {
-    margin-bottom: 20px;
-  }
-  .langbtn {
-    height: 36px;
-    min-width: 110px;
-    font-size: 12px;
-  }
-  .loginhead {
-    margin-top: 30px;
-  }
-  .loginhead h2 {
-    font-size: 21px;
-  }
-  .loginhead p {
-    font-size: 11px;
-  }
-  .form {
-    margin-top: 20px;
-  }
-  .password {
-    height: 56px;
-  }
-  .password input {
-    padding: 0 48px;
-    font-size: 15px;
-  }
-  .lock, .eye {
-    width: 20px;
-    height: 20px;
-  }
-  .lock {
-    left: 14px;
-  }
-  .eye {
-    right: 14px;
-  }
-  .lock svg, .eye svg {
-    width: 18px;
-    height: 18px;
-  }
-  .submit {
-    height: 52px;
-    margin-top: 18px;
-    font-size: 15px;
-  }
-  .submit svg {
-    width: 20px;
-    height: 20px;
-  }
-  .divider {
-    margin: 18px 0 14px;
-    font-size: 10px;
-  }
-  .support {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  .support button {
-    height: 52px;
-    padding: 0 14px;
-  }
-  .supportmain svg {
-    width: 24px;
-    height: 24px;
-  }
-  .supportlabel {
-    font-size: 12px;
-  }
-  .forgot {
-    margin: 16px auto 0;
-    font-size: 10px;
-  }
-  .forgot svg {
-    width: 14px;
-    height: 14px;
-  }
-}
-
-@media (max-width: 360px) {
-  .page {
-    padding: 12px;
-  }
-  .left {
-    padding: 20px 14px 16px;
-  }
-  .logo {
-    height: 60px;
-    gap: 12px;
-  }
-  .cube {
-    width: 52px;
-    height: 52px;
-  }
-  .brand {
-    font-size: 32px;
-  }
-  .features {
-    margin-top: 14px;
-    gap: 8px;
-  }
-  .feature {
-    height: 60px;
-    padding: 8px 10px;
-    gap: 8px;
-  }
-  .iconbox {
-    width: 32px;
-    height: 32px;
-    flex: 0 0 32px;
-  }
-  .iconbox svg {
-    width: 18px;
-    height: 18px;
-  }
-  .ftitle {
-    font-size: 11px;
-  }
-  .fdesc {
-    display: none;
-  }
-  .right {
-    padding: 14px;
-  }
-  .loginhead h2 {
-    font-size: 18px;
-  }
-  .password input {
-    font-size: 14px;
-  }
-  .submit {
-    height: 46px;
-    font-size: 14px;
-  }
-  .support button {
-    height: 44px;
-    padding: 0 10px;
-  }
-}
-
-/* ── Landscape phone ────────────────────────────────────────────────────── */
-@media (max-height: 480px) and (orientation: landscape) {
-  .page {
-    padding: 12px;
-    align-items: flex-start;
-  }
-  .stage {
-    height: 100vh;
-    grid-template-columns: 1fr 1fr;
-  }
-  .panel {
-    height: 100%;
-  }
-  .left {
-    padding: 16px 20px;
-  }
-  .logo {
-    height: 50px;
-  }
-  .cube {
-    width: 44px;
-    height: 44px;
-  }
-  .brand {
-    font-size: 28px;
-  }
-  .private {
-    display: none;
-  }
-  .welcome {
-    margin-top: 10px;
-  }
-  .welcome h1 {
-    font-size: 16px;
-  }
-  .welcome p {
-    display: none;
-  }
-  .features {
-    display: none;
-  }
-  .tagline {
-    display: none;
-  }
-  .right {
-    padding: 16px 20px;
-  }
-  .loginhead {
-    margin-top: 10px;
-  }
-  .loginhead h2 {
-    font-size: 16px;
-  }
-  .loginhead p {
-    display: none;
-  }
-  .form {
-    margin-top: 10px;
-  }
-  .password {
-    height: 44px;
-  }
-  .submit {
-    height: 40px;
-    margin-top: 10px;
-    font-size: 13px;
-  }
-  .divider {
-    margin: 10px 0 8px;
-  }
-  .support {
-    display: none;
-  }
-  .forgot {
-    display: none;
-  }
-}
-
 html[dir="rtl"] .panel{direction:rtl}
 html[dir="ltr"] .panel{direction:ltr}
 .ftitle,.fdesc{white-space:normal;overflow-wrap:anywhere}
@@ -668,7 +379,7 @@ html[dir="rtl"] .private{letter-spacing:0;direction:rtl;text-align:start}
         <p data-i18n="login_subtitle">خوش آمدید! رمز عبور حساب خود را وارد کنید.</p>
       </div>
 
-      <form class="form" id="form" action="javascript:void(0);" onsubmit="return false;">
+      <form class="form" id="form">
         <div class="password">
           <span class="lock"><svg viewBox="0 0 24 24" filter="url(#iconGlow)"><path d="M7 10V7a5 5 0 0 1 10 0v3"/><rect x="4.5" y="10" width="15" height="11" rx="2"/><circle cx="12" cy="15" r="1.2" fill="currentColor" stroke="none"/><path d="M12 16.2v2.2"/></svg></span>
           <input id="password" type="password" placeholder="رمز عبور" data-i18n-ph="password" data-i18n-aria="password" aria-label="رمز عبور" autocomplete="current-password">
@@ -699,164 +410,79 @@ html[dir="rtl"] .private{letter-spacing:0;direction:rtl;text-align:start}
 </main>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="/static/js/i18n.js"></script>
 <script>
 (()=>{
   const $=s=>document.querySelector(s);
-  const tr=(key,vars)=>{
-    try{
-      if(window.I18N && typeof I18N.t === "function") return I18N.t(key,vars);
-    }catch(_){}
-    return key;
-  };
+  const tr=(key,vars)=>I18N.t(key,vars);
   const password=$("#password"), eye=$("#eye"), toast=$("#toast");
   const language=$("#language"), langbtn=$("#langbtn"), langlabel=$("#langlabel");
-  const show=m=>{
-    if(!toast) return;
-    toast.textContent=m;
-    toast.classList.add("show");
-    clearTimeout(show.t);
-    show.t=setTimeout(()=>toast.classList.remove("show"),2000);
+  const show=m=>{toast.textContent=m;toast.classList.add("show");clearTimeout(show.t);show.t=setTimeout(()=>toast.classList.remove("show"),1800)};
+  fetch("/api/me",{credentials:"same-origin"}).then(r=>r.json()).then(d=>{ if(d && d.logged_in) window.location.href="/dashboard"; }).catch(()=>{});
+
+  eye.onclick=()=>{
+    const v=password.type==="text";
+    password.type=v?"password":"text";
+    eye.setAttribute("data-i18n-aria",v?"show_password":"hide_password");
+    eye.setAttribute("aria-label",tr(v?"show_password":"hide_password"));
+    eye.innerHTML=v
+      ? '<svg viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 10.7a2 2 0 0 0 2.7 2.7"/><path d="M9.9 5.2A10.9 10.9 0 0 1 12 5c5.4 0 9 5 9 5a16.6 16.6 0 0 1-3.1 3.3"/><path d="M6.2 6.3C3.9 7.9 3 10 3 10s3.6 5 9 5c1 0 1.9-.2 2.8-.5"/></svg>'
+      : '<svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>';
   };
-
-  const savedToken=(()=>{try{return localStorage.getItem("titan_token")||"";}catch(_){return "";}})();
-  const meHeaders=savedToken?{"Authorization":"Bearer "+savedToken}:{};
-  fetch("/api/me",{credentials:"same-origin",headers:meHeaders}).then(r=>r.json()).then(d=>{
-    if(d && d.logged_in){
-      const dest=savedToken?("/dashboard?token="+encodeURIComponent(savedToken)):"/dashboard";
-      window.location.replace(dest);
-    }
-  }).catch(()=>{});
-
-  if(eye && password){
-    eye.onclick=()=>{
-      const v=password.type==="text";
-      password.type=v?"password":"text";
-      eye.setAttribute("data-i18n-aria",v?"show_password":"hide_password");
-      eye.setAttribute("aria-label",tr(v?"show_password":"hide_password"));
-      eye.innerHTML=v
-        ? '<svg viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 10.7a2 2 0 0 0 2.7 2.7"/><path d="M9.9 5.2A10.9 10.9 0 0 1 12 5c5.4 0 9 5 9 5a16.6 16.6 0 0 1-3.1 3.3"/><path d="M6.2 6.3C3.9 7.9 3 10 3 10s3.6 5 9 5c1 0 1.9-.2 2.8-.5"/></svg>'
-        : '<svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>';
-    };
-  }
-
+  langbtn.onclick=e=>{e.stopPropagation();const o=language.classList.toggle("open");langbtn.setAttribute("aria-expanded",o)};
   const paintLanguage=()=>{
-    try{
-      const lang = (window.I18N && I18N.lang) || "fa";
-      if(langlabel) langlabel.textContent = lang === "en" ? "English" : "فارسی";
-      if(langbtn) langbtn.setAttribute("aria-label", tr("language"));
-      if(toast) toast.classList.remove("show");
-    }catch(_){}
+    langlabel.textContent=tr(I18N.lang==='en'?'lang_en':'lang_fa');
+    langbtn.setAttribute('aria-label',tr('language'));
+    toast.classList.remove('show');
   };
-  document.addEventListener("titan:lang", paintLanguage);
+  document.addEventListener('titan:lang',paintLanguage);
   paintLanguage();
-
-  if(langbtn && language){
-    langbtn.onclick=e=>{
-      e.stopPropagation();
-      const o=language.classList.toggle("open");
-      langbtn.setAttribute("aria-expanded", String(o));
-    };
-    language.querySelectorAll("[data-lang]").forEach(button=>{
-      button.onclick=e=>{
-        e.stopPropagation();
-        const selected = button.dataset.lang;
-        try{
-          if(window.I18N && typeof I18N.setLang === "function") I18N.setLang(selected);
-        }catch(_){}
-        language.classList.remove("open");
-        langbtn.setAttribute("aria-expanded","false");
-        show(tr("language_set"));
-      };
-    });
-    const closeLanguage=()=>{language.classList.remove("open");langbtn.setAttribute("aria-expanded","false");};
-    document.addEventListener("click",e=>{if(!language.contains(e.target))closeLanguage();});
-    document.addEventListener("keydown",e=>{if(e.key==="Escape")closeLanguage();});
-  }
-
+  language.querySelectorAll('[data-lang]').forEach(button=>button.onclick=()=>{
+    I18N.setLang(button.dataset.lang);
+    language.classList.remove('open');
+    langbtn.setAttribute('aria-expanded','false');
+    show(tr('language_set'));
+  });
+  const closeLanguage=()=>{language.classList.remove('open');langbtn.setAttribute('aria-expanded','false')};
+  document.onclick=e=>{if(!language.contains(e.target))closeLanguage()};
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeLanguage()});
   let loggingIn=false;
-  const doLogin=async()=>{
+  $("#form").onsubmit=async e=>{
+    e.preventDefault();
     if(loggingIn) return;
-    const pass=(password ? password.value : "").trim();
-    if(!pass){
-      show(tr("login_enter_password"));
-      if(password) password.focus();
-      return;
-    }
+    const pass=(password.value||"").trim();
+    if(!pass){show(tr("login_enter_password")); password.focus(); return;}
     loggingIn=true;
     const btn=$("#form .submit");
-    if(btn){
-      btn.disabled=true;
-      btn.style.opacity=".7";
-      const sp=btn.querySelector("span");
-      if(sp) sp.textContent=tr("login_pending");
-    }
+    if(btn){btn.disabled=true; btn.style.opacity=".7"; const sp=btn.querySelector("span"); if(sp) sp.textContent=tr("login_pending");}
     show(tr("login_checking"));
     try{
-      const r=await fetch("/api/login",{
-        method:"POST",
-        credentials:"same-origin",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({username:"TiTaN",password:pass,remember:true})
-      });
+      const r=await fetch("/api/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:"TiTaN",password:pass,remember:true})});
       let d={}; try{d=await r.json();}catch(_){}
       if(r.ok && d.ok){
-        if(d.token){
-          try{ localStorage.setItem("titan_token", d.token); }catch(_){}
-        }
         show(tr("login_success"));
-        setTimeout(()=>{
-          const dest=d.token?("/dashboard?token="+encodeURIComponent(d.token)):"/dashboard";
-          window.location.replace(dest);
-        },200);
+        setTimeout(()=>{window.location.href="/dashboard";},350);
         return;
       }
       const detail=(d.detail||"");
-      console.warn("Login response:", r.status, d);
       if(r.status===429 && detail.startsWith("locked")){
         const secs=parseInt((detail.split(":")[1]||"60"),10);
         show(tr("login_locked",{seconds:secs}));
-      }else if(r.status===401 || detail==="invalid-credentials"){
+      }else if(r.status===401){
         show(tr("login_wrong_password"));
       }else{
-        const msg = (detail && tr(detail) !== detail) ? tr(detail) : (detail || tr("login_failed"));
-        show(msg);
+        show(tr("login_failed"));
       }
     }catch(err){
       console.error(err);
       show(tr("login_network_error"));
     }finally{
       loggingIn=false;
-      if(btn){
-        btn.disabled=false;
-        btn.style.opacity="";
-        const sp=btn.querySelector("span");
-        if(sp) sp.textContent=tr("login_submit");
-      }
+      if(btn){btn.disabled=false; btn.style.opacity=""; const sp=btn.querySelector("span"); if(sp) sp.textContent=tr("login_submit"); }
     }
   };
-
-  const formEl=$("#form");
-  if(formEl){
-    formEl.onsubmit=e=>{
-      e.preventDefault();
-      doLogin();
-    };
-  }
-  const submitBtn=$("#form .submit");
-  if(submitBtn){
-    submitBtn.onclick=e=>{
-      e.preventDefault();
-      doLogin();
-    };
-  }
-
-  document.querySelectorAll(".support button").forEach(b=>{
-    b.onclick=()=>show(tr(b.dataset.msgKey));
-  });
-  const forgotBtn=$("#forgot");
-  if(forgotBtn){
-    forgotBtn.onclick=()=>show(tr("login_reset_message"));
-  }
+  document.querySelectorAll(".support button").forEach(b=>b.onclick=()=>show(tr(b.dataset.msgKey)));
+  $("#forgot").onclick=()=>show(tr("login_reset_message"));
 })();
 </script>
 </body>

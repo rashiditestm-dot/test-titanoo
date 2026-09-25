@@ -733,78 +733,6 @@ const I18N = (() => {
     sub_created: ["لینک اشتراک ذخیره شد", "Subscription link saved"],
     role_main: ["پنل اصلی", "Main panel"],
     role_node: ["نود", "Node"],
-
-    // Login page translations
-    login_page_title: ["ورود — TiTaN", "Sign in — TiTaN"],
-    login_title: ["ورود به حساب کاربری", "Sign in to account"],
-    login_subtitle: ["خوش آمدید! رمز عبور حساب خود را وارد کنید.", "Welcome! Enter your account password."],
-    password: ["رمز عبور", "Password"],
-    login_submit: ["ورود", "Sign in"],
-    login_pending: ["در حال ورود...", "Signing in..."],
-    login_checking: ["در حال بررسی رمز عبور...", "Verifying password..."],
-    login_success: ["ورود موفقیت‌آمیز بود", "Login successful"],
-    login_wrong_password: ["رمز عبور اشتباه است", "Incorrect password"],
-    login_enter_password: ["لطفاً رمز عبور را وارد کنید", "Please enter password"],
-    login_locked: ["ورود موقتاً مسدود شد ({seconds} ثانیه)", "Login temporarily locked ({seconds}s)"],
-    login_failed: ["ورود ناموفق بود", "Login failed"],
-    login_network_error: ["خطای شبکه یا سرور", "Network or server error"],
-    login_help: ["راهنما و پشتیبانی", "Help & Support"],
-    login_support: ["پشتیبانی", "Support"],
-    login_support_hint: ["راهنما و راه‌های ارتباطی", "Help & contact methods"],
-    login_telegram: ["تلگرام", "Telegram"],
-    login_telegram_message: ["برای پشتیبانی به ربات یا پشتیبان تلگرام پیام دهید.", "Contact support on Telegram."],
-    login_support_message: ["برای پشتیبانی با مدیر در ارتباط باشید.", "Contact administrator for support."],
-    login_forgot: ["رمز عبور خود را فراموش کرده‌اید؟", "Forgot your password?"],
-    login_reset_message: ["برای بازنشانی رمز عبور، متغیر TITAN_ADMIN_PASS را تنظیم یا سرور را ریست کنید.", "To reset password, set TITAN_ADMIN_PASS or reset the server."],
-    show_password: ["نمایش رمز عبور", "Show password"],
-    hide_password: ["مخفی کردن رمز عبور", "Hide password"],
-    language: ["زبان", "Language"],
-    lang_fa: ["فارسی", "Persian"],
-    lang_en: ["English", "English"],
-    language_set: ["زبان تغییر کرد", "Language updated"],
-    private_network: ["شبکه اختصاصی امن", "Secure Private Network"],
-    login_speed: ["سرعت بالا و پایدار", "High speed & stable"],
-    login_speed_hint: ["بهینه‌سازی شده برای اتصال پرسرعت", "Optimized for high-speed connection"],
-    login_stable: ["اتصال هوشمند", "Smart connection"],
-    login_stable_hint: ["مسیریابی هوشمند و بدون اختلال", "Smart routing and minimal disruption"],
-    login_privacy: ["حریم خصوصی کامل", "Complete privacy"],
-    login_privacy_hint: ["رمزنگاری پیشرفته و امن", "Advanced encryption and security"],
-    login_tagline: ["سامانه هوشمند مدیریت تونل و کانفیگ", "Smart tunnel & config management system"],
-    login_welcome_before: ["به سامانه هوشمند", "Welcome to the smart"],
-    login_welcome_after: ["خوش آمدید", "system"],
-    login_welcome_hint: ["برای دسترسی به پنل مدیریت، رمز عبور خود را وارد کنید.", "Enter your password to access the admin panel."],
-
-    // Features: Support Center, Smart Refresh, Notification Center
-    support_center: ["پشتیبانی", "Support Center"],
-    support_center_title: ["پشتیبانی", "Support Center"],
-    support_email: ["پشتیبانی ایمیل", "Support Email"],
-    support_status: ["وضعیت سرویس", "Service Status"],
-    support_docs: ["مستندات", "Documentation"],
-    support_feedback: ["ارسال بازخورد", "Send Feedback"],
-    support_claim: ["دریافت پنل", "Claim Panel"],
-    support_node_detect: ["تشخیص خودکار نود", "Auto-detect Node"],
-
-    smart_refresh: ["بروزرسانی هوشمند", "Smart Refresh"],
-    smart_refresh_title: ["بروزرسانی هوشمند", "Smart Refresh"],
-    smart_refresh_loading: ["در حال بروزرسانی...", "Updating..."],
-    smart_refresh_success: ["اطلاعات با موفقیت بروزرسانی شد", "Information updated successfully"],
-    smart_refresh_error: ["بروزرسانی اطلاعات ناموفق بود", "Failed to update information"],
-
-    notification_center: ["مرکز اعلان‌ها", "Notification Center"],
-    notification_center_title: ["مرکز اعلان‌ها", "Notification Center"],
-    notification_no_items: ["اعلانی وجود ندارد", "No notifications"],
-    notification_mark_read: ["علامت‌گذاری همه به عنوان خوانده شده", "Mark all read"],
-    notification_clear: ["پاک کردن همه", "Clear all"],
-    notification_loading: ["در حال بارگذاری...", "Loading..."],
-
-    notify_expiry_soon: ["انقضا نزدیک", "Expiry soon"],
-    notify_traffic_high: ["مصرف بالا", "Traffic high"],
-    notify_node_online: ["نود آنلاین شد", "Node online"],
-    notify_node_offline: ["نود آفلاین شد", "Node offline"],
-    notify_sub_changed: ["تغییر اشتراک", "Subscription changed"],
-    notify_system: ["پیام سیستم", "System message"],
-
-    sidebar_scroll_off: ["در دسترس", "Available"],
   };
 
   let lang = 'fa';
@@ -865,4 +793,3 @@ const I18N = (() => {
   apply();
   return { t, keyFor, apply, setLang, get lang() { return lang; }, get locale() { return lang === 'fa' ? 'fa-IR' : 'en-GB'; } };
 })();
-if (typeof window !== 'undefined') window.I18N = I18N;
